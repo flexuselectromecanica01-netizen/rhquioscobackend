@@ -15,15 +15,8 @@ export class VacacionesService {
 
   ){}
 
-  private generarPasswordInicial(nombreCompleto:string):string{
-    const partes = nombreCompleto.trim().split("")
-    const primerNombre = partes[0];
-    const primerApellido = partes[1]
-
-    if(!primerApellido || !primerApellido){
-      throw new BadRequestException("El nombre debe tener al menos nombre y apellido")
-    }
-    return `${primerNombre}${primerApellido}`;
+  private generarPasswordInicial(idempleado:string):string{
+    return `Empleado${idempleado}`;
   }
 
   async create(createVacacioneDto: CreateVacacioneDto) {
@@ -42,7 +35,7 @@ export class VacacionesService {
       });
       if (!loginExistente) {
         const passwordInicial = this.generarPasswordInicial(
-          empleadoGuardado.nombre,
+          empleadoGuardado.idempleado,
         );
 
         const passwordHasheada = await bcrypt.hash(passwordInicial, 10);
@@ -57,9 +50,7 @@ export class VacacionesService {
         await manager.save(Login, login);
       }
       return {
-        message: "Empleado creado correctamente",
-        empleado: empleadoGuardado,
-      };
+        message: "Empleado creado correctamente"};
 
       }
 
