@@ -1,26 +1,93 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateVacacioneDto } from './dto/create-vacacione.dto';
 import { UpdateVacacioneDto } from './dto/update-vacacione.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import * as bcrypt from "bcrypt";
+import { Vacacione } from './entities/vacacione.entity';
+import { Repository } from 'typeorm';
+import { Login } from '../login/entities/login.entity';
 
 @Injectable()
 export class VacacionesService {
-  create(createVacacioneDto: CreateVacacioneDto) {
-    return 'This action adds a new vacacione';
+  constructor(
+    @InjectRepository(Vacacione) private readonly vacacionesRepository:Repository<Vacacione>,
+    @InjectRepository(Login) private readonly loginRepository: Repository<Login>
+
+  ){}
+
+  private generarPasswordInicial(nombreCompleto:string):string{
+    const partes = nombreCompleto.trim().split("")
+    const primerNombre = partes[0];
+    const primerApellido = partes[1]
+
+    if(!primerApellido || !primerApellido){
+      throw new BadRequestException("El nombre debe tener al menos nombre y apellido")
+    }
+    return `${primerNombre}${primerApellido}`;
+  }
+
+  async create(createVacacioneDto: CreateVacacioneDto) {
+      return this.vacacionesRepository.manager.transaction(async(manager)=>{
+        const empleado = manager.create(Vacacione,createVacacioneDto);
+        const empleadoGuardado = await manager.save(Vacacione, empleado);
+        const loginExistente = await manager.findOne(Login, {
+        where: {
+          empleado: {
+            idempleado: empleadoGuardado.idempleado,
+          },
+        },
+        relations: {
+          empleado: true,
+        },
+      });
+      if (!loginExistente) {
+        const passwordInicial = this.generarPasswordInicial(
+          empleadoGuardado.nombre,
+        );
+
+        const passwordHasheada = await bcrypt.hash(passwordInicial, 10);
+
+        const login = manager.create(Login, {
+          empleado: empleadoGuardado,
+          password: passwordHasheada,
+          actualizarpassword: true,
+          rol: "EMPLEADO",
+        });
+
+        await manager.save(Login, login);
+      }
+      return {
+        message: "Empleado creado correctamente",
+        empleado: empleadoGuardado,
+      };
+
+      }
+
+      )    
+
   }
 
   findAll() {
-    return 'this returs all';
+    return this.vacacionesRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} vacacione`;
+  async findOne(id: number) {
+    const vacaciones = await this.vacacionesRepository.findOneBy({id})
+    if(!vacaciones){
+      throw new NotFoundException(`No existe la solicitud de vacaciones ${id}`)
+    }
+    return vacaciones;
   }
 
-  update(id: number, updateVacacioneDto: UpdateVacacioneDto) {
-    return `This action updates a #${id} vacacione`;
+  async update(id: number, updateVacacioneDto: UpdateVacacioneDto) {
+    const vacaciones = await this.findOne(id)
+    Object.assign(vacaciones,updateVacacioneDto) 
+    return await this.vacacionesRepository.save(vacaciones);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} vacacione`;
+  async remove(id: number) {
+    const vacaciones = await this.findOne(id)
+    await this.vacacionesRepository.remove(vacaciones)
+    return {message:'vacaciones eliminadas'};
   }
 }

@@ -60,17 +60,17 @@ export class Vacacione {
     @Column({
         type:'int'
     })
-    diasderecho:string
+    diasderecho:number
 
     @Column({
         type:"date"
     })
-    iniciocicloactual:string
+    iniciocicloactual:Date
 
     @Column({
         type:"date"
     })
-    fincicloactual:string
+    fincicloactual:Date
 
     @Column({
         type:"decimal",
@@ -82,7 +82,7 @@ export class Vacacione {
     @Column({
         type:'int'
     })
-    diastomados:string
+    diastomados:number
 
     @Column({
         type:"decimal",
@@ -94,13 +94,13 @@ export class Vacacione {
     @Column({
         type:'int'
     })
-    diasporvencer:string
+    diasporvencer:number
 
 
     @Column({
         type:'int'
     })
-    diasavencer:string
+    diasavencer:number
 
     @Column({
        type:'enum',
