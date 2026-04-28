@@ -9,7 +9,7 @@ export class VacacionesService {
   }
 
   findAll() {
-    return { mensaje: "Hola luis" };
+    return 'this returs all';
   }
 
   findOne(id: number) {

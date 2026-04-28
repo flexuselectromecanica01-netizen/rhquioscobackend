@@ -1,9 +1,15 @@
-import { Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class Vacacione {
     @PrimaryGeneratedColumn()
     id:number
+    @Column({
+        type:'varchar',
+        length:4,
+        unique:true
+    })
+    idempleado:string
     nombre:string
     tipoempleado:string
     area:string
