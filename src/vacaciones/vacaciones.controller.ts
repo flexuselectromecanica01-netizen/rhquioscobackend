@@ -11,6 +11,10 @@ export class VacacionesController {
 findByIdEmpleado(@Param("idempleado") idempleado: string) {
   return this.vacacionesService.findByIdEmpleado(idempleado);
 }
+  @Get("empleados")
+findAllEmpleadosConSolicitudes() {
+  return this.vacacionesService.findAllEmpleadosConSolicitudes();
+}
 
   @Post()
   create(@Body() createVacacioneDto: CreateVacacioneDto) {

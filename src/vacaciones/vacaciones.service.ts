@@ -98,4 +98,19 @@ export class VacacionesService {
 
   return empleado;
 }
+async findAllEmpleadosConSolicitudes() {
+  const empleados = await this.vacacionesRepository.find({
+    relations: {
+      solicitudes: true,
+    },
+    order: {
+      id: "ASC",
+      solicitudes: {
+        id: "ASC",
+      },
+    },
+  });
+
+  return empleados;
+}
 }
