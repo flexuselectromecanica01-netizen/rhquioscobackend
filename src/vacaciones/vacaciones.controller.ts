@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { VacacionesService } from './vacaciones.service';
 import { CreateVacacioneDto } from './dto/create-vacacione.dto';
 import { UpdateVacacioneDto } from './dto/update-vacacione.dto';
+import { JwtAuthGuard } from '../login/guards/jwt-auth.guard';
 
 @Controller('vacaciones')
 export class VacacionesController {
@@ -20,7 +21,7 @@ findAllEmpleadosConSolicitudes() {
   create(@Body() createVacacioneDto: CreateVacacioneDto) {
     return this.vacacionesService.create(createVacacioneDto);
   }
-
+  @UseGuards(JwtAuthGuard)
   @Get()
   findAll() {
     return this.vacacionesService.findAll();
