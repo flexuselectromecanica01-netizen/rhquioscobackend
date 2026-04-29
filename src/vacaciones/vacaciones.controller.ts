@@ -12,11 +12,12 @@ export class VacacionesController {
 findByIdEmpleado(@Param("idempleado") idempleado: string) {
   return this.vacacionesService.findByIdEmpleado(idempleado);
 }
-  @Get("empleados")
+@UseGuards(JwtAuthGuard)
+@Get("empleados")
 findAllEmpleadosConSolicitudes() {
   return this.vacacionesService.findAllEmpleadosConSolicitudes();
 }
-
+  @UseGuards(JwtAuthGuard)
   @Post()
   create(@Body() createVacacioneDto: CreateVacacioneDto) {
     return this.vacacionesService.create(createVacacioneDto);
@@ -26,17 +27,17 @@ findAllEmpleadosConSolicitudes() {
   findAll() {
     return this.vacacionesService.findAll();
   }
-
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.vacacionesService.findOne(+id);
   }
-
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateVacacioneDto: UpdateVacacioneDto) {
     return this.vacacionesService.update(+id, updateVacacioneDto);
   }
-
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.vacacionesService.remove(+id);
