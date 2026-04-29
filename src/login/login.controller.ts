@@ -15,6 +15,13 @@ export class LoginController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Patch("update-password")
+  actualizarpassword(@Req() req:Request,@Body() body:{password:string}){
+    const usuario = req['user']
+    return this.loginService.actualizarPassword(usuario.sub,body.password)
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get("me")
   me(@Req() req:any){
     return this.loginService.me(req.user)

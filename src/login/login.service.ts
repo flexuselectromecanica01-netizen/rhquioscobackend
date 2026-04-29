@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { CreateLoginDto } from './dto/create-login.dto';
 import { UpdateLoginDto } from './dto/update-login.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -70,6 +70,22 @@ export class LoginService {
     empleado: usuario.empleado,
   };
 }
+  async actualizarPassword(usuarioId:number,password:string){
+    if(!password || password.length < 8){
+      throw new BadRequestException("La contraseña debe de tener minimo 8 caracteres")
+    }
+    const passwordHasheada = await bcrypt.hash(password,10)
+
+    await this.loginRepository.update(
+      {id:usuarioId},
+      {password:passwordHasheada,
+        actualizarpassword:false
+      }
+    )
+    return{
+      message:"Contraseña actualizada correctamente"
+    }
+  }
 
   create(CreateLoginDto:CreateLoginDto) {
     return `This action returns all login`;
