@@ -21,21 +21,22 @@ create(
     usuario.idempleado,
   );
 }
+  @UseGuards(JwtAuthGuard)
   @Get()
   findAll() {
     return this.solicitudesService.findAll();
   }
-
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.solicitudesService.findOne(+id);
   }
-
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateSolicitudeDto: UpdateSolicitudeDto) {
     return this.solicitudesService.update(+id, updateSolicitudeDto);
   }
-
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.solicitudesService.remove(+id);
