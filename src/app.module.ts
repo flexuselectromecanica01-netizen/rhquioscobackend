@@ -8,6 +8,7 @@ import { PuestoModule } from './puesto/puesto.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeOrmConfig } from './config/typeorm.config';
+import { SolicitudesModule } from './solicitudes/solicitudes.module';
 
 @Module({
   imports: [
@@ -18,7 +19,7 @@ import { typeOrmConfig } from './config/typeorm.config';
           useFactory:typeOrmConfig,
           inject:[ConfigService]
         }),
-    VacacionesModule, LoginModule, AreaModule, PuestoModule],
+    VacacionesModule, LoginModule, AreaModule, PuestoModule, SolicitudesModule],
   controllers: [AppController],
   providers: [AppService],
 })

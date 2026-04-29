@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from "bcrypt";
 import { Vacacione } from './entities/vacacione.entity';
 import { Repository } from 'typeorm';
-import { Login } from '../login/entities/login.entity';
+import { Login, TipoRolSistema } from '../login/entities/login.entity';
 
 @Injectable()
 export class VacacionesService {
@@ -44,7 +44,7 @@ export class VacacionesService {
           empleado: empleadoGuardado,
           password: passwordHasheada,
           actualizarpassword: true,
-          rol: "EMPLEADO",
+          rol: TipoRolSistema.EMPLEADO,
         });
 
         await manager.save(Login, login);
@@ -81,4 +81,21 @@ export class VacacionesService {
     await this.vacacionesRepository.remove(vacaciones)
     return {message:'vacaciones eliminadas'};
   }
+
+  async findByIdEmpleado(idempleado: string) {
+  const empleado = await this.vacacionesRepository.findOne({
+    where: {
+      idempleado,
+    },
+    relations: {
+      solicitudes: true,
+    },
+  });
+
+  if (!empleado) {
+    throw new NotFoundException("Empleado no encontrado");
+  }
+
+  return empleado;
+}
 }

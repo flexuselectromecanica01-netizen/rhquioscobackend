@@ -7,6 +7,11 @@ import { UpdateVacacioneDto } from './dto/update-vacacione.dto';
 export class VacacionesController {
   constructor(private readonly vacacionesService: VacacionesService) {}
 
+  @Get("empleado/:idempleado")
+findByIdEmpleado(@Param("idempleado") idempleado: string) {
+  return this.vacacionesService.findByIdEmpleado(idempleado);
+}
+
   @Post()
   create(@Body() createVacacioneDto: CreateVacacioneDto) {
     return this.vacacionesService.create(createVacacioneDto);

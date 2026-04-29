@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Solicitude } from "../../solicitudes/entities/solicitude.entity";
 
 export enum TipoEmpleadoEnum{
     QUINCENAL="QUINCENAL",
@@ -114,4 +115,9 @@ export class Vacacione {
         nullable:true
     })
     accionsugerida:string
+
+
+    @OneToMany(()=>Solicitude,(solicitud)=>solicitud.empleado)
+    solicitudes:Solicitude[]
+
 }

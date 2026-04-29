@@ -1,5 +1,13 @@
 import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Vacacione } from "../../vacaciones/entities/vacacione.entity";
+
+export enum TipoRolSistema{
+    SUPERVISOR="SUPERVISOR",
+    ADMINISTRADOR="ADMINISTRADOR",
+    EMPLEADO="EMPLEADO"
+}
+
+
 @Entity()
 export class Login {
     @PrimaryGeneratedColumn()
@@ -25,10 +33,10 @@ export class Login {
     actualizarpassword:boolean
 
     @Column({
-        type:"varchar",
-        length:50,
-        default:"Empleado"
-    })
-    rol:string
+  type: "enum",
+  enum: TipoRolSistema,
+  default: TipoRolSistema.EMPLEADO,
+})
+rol: TipoRolSistema;
 
 }
