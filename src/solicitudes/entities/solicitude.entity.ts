@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm"
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm"
 import { Vacacione } from "../../vacaciones/entities/vacacione.entity"
 
 export enum EstatusSolicitud{
@@ -46,4 +46,9 @@ export class Solicitude {
         referencedColumnName:"idempleado"
     })
     empleado:Vacacione
+
+    @CreateDateColumn({
+  type: "timestamp",
+})
+fechacreacion: Date;
 }

@@ -1,5 +1,6 @@
 import { AppDataSource } from "../data-source";
 import { seedAreas } from "./areas.seed";
+import { seedEmpleadosLogin } from "./empleados-login.seed";
 import { seedPuestos } from "./puestos.seed";
 
 async function runSeeders() {
@@ -7,6 +8,7 @@ async function runSeeders() {
 
   await seedAreas(AppDataSource);
   await seedPuestos(AppDataSource);
+  await seedEmpleadosLogin(AppDataSource);
 
   await AppDataSource.destroy();
 

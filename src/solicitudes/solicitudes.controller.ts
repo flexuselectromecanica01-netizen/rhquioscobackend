@@ -3,6 +3,7 @@ import { SolicitudesService } from './solicitudes.service';
 import { CreateSolicitudeDto } from './dto/create-solicitude.dto';
 import { UpdateSolicitudeDto } from './dto/update-solicitude.dto';
 import { JwtAuthGuard } from '../login/guards/jwt-auth.guard';
+import { RechazarSolicitudDto } from './dto/rechazar-solicitud.dto';
 
 @Controller('solicitudes')
 export class SolicitudesController {
@@ -41,4 +42,20 @@ create(
   remove(@Param('id') id: string) {
     return this.solicitudesService.remove(+id);
   }
+
+  @Patch(":id/aprobar")
+aprobarSolicitud(@Param("id") id: string) {
+  return this.solicitudesService.aprobarSolicitud(+id);
+}
+
+@Patch(":id/rechazar")
+rechazarSolicitud(
+  @Param("id") id: string,
+  @Body() rechazarSolicitudDto: RechazarSolicitudDto,
+) {
+  return this.solicitudesService.rechazarSolicitud(
+    +id,
+    rechazarSolicitudDto.motivorechazo,
+  );
+}
 }

@@ -17,6 +17,11 @@ findByIdEmpleado(@Param("idempleado") idempleado: string) {
 findAllEmpleadosConSolicitudes() {
   return this.vacacionesService.findAllEmpleadosConSolicitudes();
 }
+
+  @Get("area/:area")
+findByArea(@Param("area") area: string) {
+  return this.vacacionesService.findByArea(area);
+}
   @Post()
   create(@Body() createVacacioneDto: CreateVacacioneDto) {
     return this.vacacionesService.create(createVacacioneDto);

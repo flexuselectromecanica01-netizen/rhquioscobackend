@@ -70,6 +70,24 @@ export class VacacionesService {
     return vacaciones;
   }
 
+  async findByArea(area:string){
+    const vacaciones = await this.vacacionesRepository.find({
+      where:{
+        area,
+      },
+      relations:{
+        solicitudes:true
+      },
+      order:{
+        nombre:'ASC'
+      }
+    })
+    if(vacaciones.length===0){
+      throw new NotFoundException(`No existen solicitudes de vacaciones`)
+    }
+    return vacaciones
+  }
+
   async update(id: number, updateVacacioneDto: UpdateVacacioneDto) {
     const vacaciones = await this.findOne(id)
     Object.assign(vacaciones,updateVacacioneDto) 

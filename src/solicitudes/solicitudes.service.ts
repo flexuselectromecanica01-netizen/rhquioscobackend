@@ -48,6 +48,58 @@ export class SolicitudesService {
   return this.solicitudesRepository.save(solicitud);
 }
 
+  async aprobarSolicitud(id: number) {
+  const solicitud = await this.solicitudesRepository.findOne({
+    where: { id },
+  });
+
+  if (!solicitud) {
+    throw new NotFoundException("Solicitud no encontrada");
+  }
+
+  if (solicitud.estatus !== EstatusSolicitud.PENDIENTE) {
+    throw new BadRequestException(
+      "Solo se pueden aprobar solicitudes pendientes",
+    );
+  }
+
+  solicitud.estatus = EstatusSolicitud.APROBADA;
+  solicitud.motivorechazo = null;
+
+  await this.solicitudesRepository.save(solicitud);
+
+  return {
+    message: "Solicitud aprobada correctamente",
+    solicitud,
+  };
+}
+
+async rechazarSolicitud(id: number, motivorechazo: string) {
+  const solicitud = await this.solicitudesRepository.findOne({
+    where: { id },
+  });
+
+  if (!solicitud) {
+    throw new NotFoundException("Solicitud no encontrada");
+  }
+
+  if (solicitud.estatus !== EstatusSolicitud.PENDIENTE) {
+    throw new BadRequestException(
+      "Solo se pueden rechazar solicitudes pendientes",
+    );
+  }
+
+  solicitud.estatus = EstatusSolicitud.RECHAZADA;
+  solicitud.motivorechazo = motivorechazo;
+
+  await this.solicitudesRepository.save(solicitud);
+
+  return {
+    message: "Solicitud rechazada correctamente",
+    solicitud,
+  };
+}
+
   findAll() {
     return this.solicitudesRepository.find({
       relations: {
