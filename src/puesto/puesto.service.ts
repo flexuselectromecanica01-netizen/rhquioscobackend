@@ -1,26 +1,44 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreatePuestoDto } from './dto/create-puesto.dto';
 import { UpdatePuestoDto } from './dto/update-puesto.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Puesto } from './entities/puesto.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class PuestoService {
-  create(createPuestoDto: CreatePuestoDto) {
-    return 'This action adds a new puesto';
+  constructor(
+    @InjectRepository(Puesto) private readonly puestoRepository:Repository<Puesto>
+  ){}
+  async create(createPuestoDto: CreatePuestoDto) {
+    await this.puestoRepository.save(createPuestoDto)
+    return {message:"Puesto creado correctamente"};
   }
 
   findAll() {
-    return `This action returns all puesto`;
+    return this.puestoRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} puesto`;
+  async findOne(id: number) {
+    const puesto = await this.puestoRepository.findOne({
+      where:{id}
+    })
+    if(!puesto){
+      throw new NotFoundException("Puesto no encontrado")
+    }
+    return puesto;
   }
 
-  update(id: number, updatePuestoDto: UpdatePuestoDto) {
-    return `This action updates a #${id} puesto`;
+  async update(id: number, updatePuestoDto: UpdatePuestoDto) {
+    const puesto = await this.findOne(id)
+    Object.assign(puesto,updatePuestoDto)
+    await this.puestoRepository.save(puesto)
+    return {message:"Puesto actualizado correctamente"};
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} puesto`;
+  async remove(id: number) {
+    const puesto = await this.findOne(id)
+    await this.puestoRepository.remove(puesto) 
+    return {message:"Puesto eliminado correctamente"};
   }
 }

@@ -24,10 +24,14 @@ export enum PuestoEnum{
     AUXILIARDESOPORTETECNICO="AUXILIARDESOPORTETECNICO"
 }
 
+export enum PruebaEnum{
+    PRUEBA="PRUEBA"
+}
+
 @Entity()
 export class Puesto {
     @PrimaryGeneratedColumn()
-    id:string
+    id:number
     @Column()
     puesto:string
 }

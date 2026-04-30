@@ -17,7 +17,6 @@ findByIdEmpleado(@Param("idempleado") idempleado: string) {
 findAllEmpleadosConSolicitudes() {
   return this.vacacionesService.findAllEmpleadosConSolicitudes();
 }
-  @UseGuards(JwtAuthGuard)
   @Post()
   create(@Body() createVacacioneDto: CreateVacacioneDto) {
     return this.vacacionesService.create(createVacacioneDto);
