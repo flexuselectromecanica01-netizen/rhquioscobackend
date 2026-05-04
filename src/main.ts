@@ -6,7 +6,7 @@ const port = process.env.PORT || 4008
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors({
-  origin: "https://rhquiosco.vercel.app",
+  origin: "http://localhost:3000",
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 });
