@@ -22,6 +22,13 @@ create(
     usuario.idempleado,
   );
 }
+
+
+  @Get("empleado/:idempleado")
+  findByIdEmpleado(@Param("idempleado") idempleado:string){
+    return this.solicitudesService.findByIdEmpleado(idempleado)
+  }
+
   @UseGuards(JwtAuthGuard)
   @Get()
   findAll() {

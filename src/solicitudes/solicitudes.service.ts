@@ -111,6 +111,22 @@ async rechazarSolicitud(id: number, motivorechazo: string) {
     });
   }
 
+  findByIdEmpleado(idempleado:string){
+    return this.solicitudesRepository.find({
+      where:{
+        empleado:{
+          idempleado
+        }
+      },
+      relations:{
+        empleado:true
+      },
+      order:{
+        id:'DESC'
+      }
+    })
+  }
+
   async findOne(id: number) {
     const solicitud = await this.solicitudesRepository.findOne({
       where: { id },
