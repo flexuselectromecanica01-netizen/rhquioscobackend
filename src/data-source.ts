@@ -12,7 +12,6 @@ import { Solicitude } from "./solicitudes/entities/solicitude.entity"
 config()
 
 
-
 export const AppDataSource= new DataSource({
     type:"postgres",
     host:process.env.DATABASE_HOST,

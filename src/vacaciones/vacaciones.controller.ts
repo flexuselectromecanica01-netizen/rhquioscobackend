@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UploadedFile, UseInterceptors, Query } from '@nestjs/common';
 import { VacacionesService } from './vacaciones.service';
 import { CreateVacacioneDto } from './dto/create-vacacione.dto';
 import { UpdateVacacioneDto } from './dto/update-vacacione.dto';
 import { JwtAuthGuard } from '../login/guards/jwt-auth.guard';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('vacaciones')
 export class VacacionesController {
@@ -12,11 +13,24 @@ export class VacacionesController {
 findByIdEmpleado(@Param("idempleado") idempleado: string) {
   return this.vacacionesService.findByIdEmpleado(idempleado);
 }
+
+  @Get("paginado")
+  findAllPaginado(@Query("page") page?: string,@Query("limit") limit?:string){
+    return this.vacacionesService.findAllPaginado(Number(page) || 1,Number(limit) || 10)
+  }
+
+
+
 @UseGuards(JwtAuthGuard)
 @Get("empleados")
 findAllEmpleadosConSolicitudes() {
   return this.vacacionesService.findAllEmpleadosConSolicitudes();
 }
+@Post('importar-excel')
+  @UseInterceptors(FileInterceptor('file'))
+  importarExcel(@UploadedFile() file: any) {
+    return this.vacacionesService.importarDesdeExcel(file);
+  }
 
   @Get("area/:area")
 findByArea(@Param("area") area: string) {
@@ -46,4 +60,10 @@ findByArea(@Param("area") area: string) {
   remove(@Param('id') id: string) {
     return this.vacacionesService.remove(+id);
   }
+
+  @Post("importar-json")
+  importarJson(@Body() body: { empleados: CreateVacacioneDto[] }) {
+    return this.vacacionesService.importarDesdeJson(body.empleados);
+  }
+
 }
