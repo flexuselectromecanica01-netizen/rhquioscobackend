@@ -38,14 +38,14 @@ export class Solicitude {
     })
     motivorechazo?:string
 
-    @ManyToOne(()=>Vacacione,(vacacione)=>vacacione.idempleado,{
-        nullable:false
-    })
-    @JoinColumn({
-        name:"idempleado",
-        referencedColumnName:"idempleado"
-    })
-    empleado:Vacacione
+    @ManyToOne(() => Vacacione, (vacacione) => vacacione.solicitudes, {
+  nullable: false,
+})
+@JoinColumn({
+  name: "idempleado",
+  referencedColumnName: "idempleado",
+})
+empleado: Vacacione;
 
     @CreateDateColumn({
   type: "timestamp",

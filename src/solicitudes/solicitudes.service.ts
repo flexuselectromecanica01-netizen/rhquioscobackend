@@ -19,6 +19,8 @@ export class SolicitudesService {
     },
   });
 
+
+
   if (!empleado) {
     throw new NotFoundException("Empleado no encontrado");
   }
@@ -51,6 +53,9 @@ export class SolicitudesService {
   async aprobarSolicitud(id: number) {
   const solicitud = await this.solicitudesRepository.findOne({
     where: { id },
+    relations: {
+      empleado: true,
+    },
   });
 
   if (!solicitud) {
@@ -63,13 +68,42 @@ export class SolicitudesService {
     );
   }
 
+  const empleado = solicitud.empleado;
+
+  if (!empleado) {
+    throw new NotFoundException("Empleado no encontrado para esta solicitud");
+  }
+
+  const diasDerecho = Number(empleado.diasderecho);
+  const diasTomadosActuales = Number(empleado.diastomados ?? 0);
+  const diasSolicitados = Number(solicitud.diastotales);
+
+  const nuevoDiasTomados = diasTomadosActuales + diasSolicitados;
+  const nuevoSaldoDisponible = diasDerecho - nuevoDiasTomados;
+
+  if (nuevoSaldoDisponible < 0) {
+    throw new BadRequestException(
+      "El empleado no tiene suficientes días disponibles para aprobar esta solicitud",
+    );
+  }
+
+  empleado.diastomados = nuevoDiasTomados;
+  empleado.saldodisponible = nuevoSaldoDisponible;
+
   solicitud.estatus = EstatusSolicitud.APROBADA;
   solicitud.motivorechazo = null;
 
+  await this.vacacionesrepository.save(empleado);
   await this.solicitudesRepository.save(solicitud);
 
   return {
     message: "Solicitud aprobada correctamente",
+    empleado: {
+      idempleado: empleado.idempleado,
+      diasderecho: empleado.diasderecho,
+      diastomados: empleado.diastomados,
+      saldodisponible: empleado.saldodisponible,
+    },
     solicitud,
   };
 }

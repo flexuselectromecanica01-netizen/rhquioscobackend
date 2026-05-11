@@ -21,7 +21,6 @@ findByIdEmpleado(@Param("idempleado") idempleado: string) {
 
 
 
-@UseGuards(JwtAuthGuard)
 @Get("empleados")
 findAllEmpleadosConSolicitudes() {
   return this.vacacionesService.findAllEmpleadosConSolicitudes();

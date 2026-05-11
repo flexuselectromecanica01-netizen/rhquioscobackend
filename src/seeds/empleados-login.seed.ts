@@ -141,39 +141,51 @@ export async function seedEmpleadosLogin(dataSource: DataSource) {
     });
 
     if (!empleado) {
-      const fechaIngreso = generarFechaIngreso();
-      const antiguedad = calcularAntiguedad(fechaIngreso);
-      const diasDerecho = calcularDiasDerecho(antiguedad);
-      const diasTomados = randomInt(0, diasDerecho);
-      const saldoDisponible = diasDerecho - diasTomados;
-      const semaforo = calcularSemaforo(saldoDisponible);
+  const fechaIngreso = generarFechaIngreso();
 
-      empleado = vacacionesRepository.create({
-        idempleado,
-        nombre: randomItem(nombres),
-        tipoempleado: randomItem([
-          TipoEmpleadoEnum.SEMANAL,
-          TipoEmpleadoEnum.QUINCENAL,
-        ]),
-        area: randomItem(areas),
-        puesto: randomItem(puestos),
-        fechaingreso: fechaIngreso,
-        antiguedad,
-        diasderecho: diasDerecho,
-        iniciocicloactual: new Date("2026-01-01"),
-        fincicloactual: new Date("2026-12-31"),
-        proporcionaldevengado: Number((Math.random() * diasDerecho).toFixed(2)),
-        diastomados: diasTomados,
-        saldodisponible: saldoDisponible,
-        diasporvencer: randomInt(0, 5),
-        diasavencer: randomInt(0, 5),
-        semaforo,
-        accionsugerida: accionSugerida(semaforo),
-      });
+  const añoActual = new Date().getFullYear();
 
-      empleado = await vacacionesRepository.save(empleado);
-      empleadosInsertados++;
-    }
+  const inicioCicloActual = new Date(fechaIngreso);
+  inicioCicloActual.setFullYear(añoActual);
+
+  const finCicloActual = new Date(inicioCicloActual);
+  finCicloActual.setDate(finCicloActual.getDate() + 7);
+
+  const antiguedad = calcularAntiguedad(fechaIngreso);
+  const diasDerecho = calcularDiasDerecho(antiguedad);
+
+  // AQUÍ ESTÁ EL CAMBIO
+  const diasTomados = 0;
+  const saldoDisponible = diasDerecho;
+
+  const semaforo = calcularSemaforo(saldoDisponible);
+
+  empleado = vacacionesRepository.create({
+    idempleado,
+    nombre: randomItem(nombres),
+    tipoempleado: randomItem([
+      TipoEmpleadoEnum.SEMANAL,
+      TipoEmpleadoEnum.QUINCENAL,
+    ]),
+    area: randomItem(areas),
+    puesto: randomItem(puestos),
+    fechaingreso: fechaIngreso,
+    antiguedad,
+    diasderecho: diasDerecho,
+    iniciocicloactual: inicioCicloActual,
+    fincicloactual: finCicloActual,
+    proporcionaldevengado: Number((Math.random() * diasDerecho).toFixed(2)),
+    diastomados: diasTomados,
+    saldodisponible: saldoDisponible,
+    diasporvencer: randomInt(0, 5),
+    diasavencer: randomInt(0, 5),
+    semaforo,
+    accionsugerida: accionSugerida(semaforo),
+  });
+
+  empleado = await vacacionesRepository.save(empleado);
+  empleadosInsertados++;
+}
 
     const loginExistente = await loginRepository.findOne({
       where: {
