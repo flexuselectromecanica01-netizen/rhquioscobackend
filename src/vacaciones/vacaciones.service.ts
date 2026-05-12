@@ -48,43 +48,104 @@ export class VacacionesService {
   }
 
   async create(createVacacioneDto: CreateVacacioneDto) {
-      return this.vacacionesRepository.manager.transaction(async(manager)=>{
-        const empleado = manager.create(Vacacione,createVacacioneDto);
-        const empleadoGuardado = await manager.save(Vacacione, empleado);
-        const loginExistente = await manager.findOne(Login, {
-        where: {
-          empleado: {
-            idempleado: empleadoGuardado.idempleado,
-          },
+  return this.vacacionesRepository.manager.transaction(async (manager) => {
+    const fechaIngreso = createVacacioneDto.fechaingreso;
+
+    if (!fechaIngreso) {
+      throw new BadRequestException("La fecha de ingreso es obligatoria");
+    }
+
+    const calcularInicioCicloActual = (fecha: string) => {
+      const [year, month, day] = fecha.split("-").map(Number);
+      const fechaBase = new Date(year, month - 1, day);
+
+      const anioActual = new Date().getFullYear();
+      fechaBase.setFullYear(anioActual);
+
+      return fechaBase.toISOString().split("T")[0];
+    };
+
+    const calcularFinCicloActual = (inicioCiclo: string) => {
+      const [year, month, day] = inicioCiclo.split("-").map(Number);
+      const fechaFin = new Date(year, month - 1, day);
+
+      fechaFin.setDate(fechaFin.getDate() + 7);
+
+      return fechaFin.toISOString().split("T")[0];
+    };
+
+    const inicioCicloActual =
+      createVacacioneDto.iniciocicloactual &&
+      createVacacioneDto.iniciocicloactual.trim() !== ""
+        ? createVacacioneDto.iniciocicloactual
+        : calcularInicioCicloActual(fechaIngreso);
+
+    const finCicloActual =
+      createVacacioneDto.fincicloactual &&
+      createVacacioneDto.fincicloactual.trim() !== ""
+        ? createVacacioneDto.fincicloactual
+        : calcularFinCicloActual(inicioCicloActual);
+
+    const diasDerecho = Number(createVacacioneDto.diasderecho ?? 0);
+    const diasTomados = Number(createVacacioneDto.diastomados ?? 0);
+
+    const saldoDisponible =
+      createVacacioneDto.saldodisponible !== undefined &&
+      createVacacioneDto.saldodisponible !== null
+        ? Number(createVacacioneDto.saldodisponible)
+        : diasDerecho - diasTomados;
+
+    const empleado = manager.create(Vacacione, {
+      ...createVacacioneDto,
+      iniciocicloactual: inicioCicloActual,
+      fincicloactual: finCicloActual,
+      antiguedad: Number(createVacacioneDto.antiguedad ?? 0),
+      diasderecho: diasDerecho,
+      diastomados: diasTomados,
+      saldodisponible: saldoDisponible,
+      proporcionaldevengado: Number(
+        createVacacioneDto.proporcionaldevengado ?? 0,
+      ),
+      diasporvencer: Number(createVacacioneDto.diasporvencer ?? 0),
+      diasavencer: Number(createVacacioneDto.diasavencer ?? 0),
+    });
+
+    const empleadoGuardado = await manager.save(Vacacione, empleado);
+
+    const loginExistente = await manager.findOne(Login, {
+      where: {
+        empleado: {
+          idempleado: empleadoGuardado.idempleado,
         },
-        relations: {
-          empleado: true,
-        },
+      },
+      relations: {
+        empleado: true,
+      },
+    });
+
+    if (!loginExistente) {
+      const passwordInicial = this.generarPasswordInicial(
+        empleadoGuardado.idempleado,
+      );
+
+      const passwordHasheada = await bcrypt.hash(passwordInicial, 10);
+
+      const login = manager.create(Login, {
+        empleado: empleadoGuardado,
+        password: passwordHasheada,
+        actualizarpassword: true,
+        rol: TipoRolSistema.EMPLEADO,
       });
-      if (!loginExistente) {
-        const passwordInicial = this.generarPasswordInicial(
-          empleadoGuardado.idempleado,
-        );
 
-        const passwordHasheada = await bcrypt.hash(passwordInicial, 10);
+      await manager.save(Login, login);
+    }
 
-        const login = manager.create(Login, {
-          empleado: empleadoGuardado,
-          password: passwordHasheada,
-          actualizarpassword: true,
-          rol: TipoRolSistema.EMPLEADO,
-        });
-
-        await manager.save(Login, login);
-      }
-      return {
-        message: "Empleado creado correctamente"};
-
-      }
-
-      )    
-
-  }
+    return {
+      message: "Empleado creado correctamente",
+      empleado: empleadoGuardado,
+    };
+  });
+}
 
   async importarDesdeJson(empleados: CreateVacacioneDto[]) {
   if (!empleados || empleados.length === 0) {
@@ -355,6 +416,43 @@ async findAllEmpleadosConSolicitudes() {
     return String(value);
   }
 
+
+  async findDetalleEmpleadoConLogin(id: number) {
+  const empleado = await this.vacacionesRepository.findOne({
+    where: { id },
+    relations: {
+      solicitudes: true,
+    },
+  });
+
+  if (!empleado) {
+    throw new NotFoundException("Empleado no encontrado");
+  }
+
+  const login = await this.loginRepository.findOne({
+    where: {
+      empleado: {
+        idempleado: empleado.idempleado,
+      },
+    },
+    relations: {
+      empleado: true,
+    },
+  });
+
+  return {
+    empleado,
+    login: login
+      ? {
+          id: login.id,
+          idempleado: empleado.idempleado,
+          rol: login.rol,
+          actualizarpassword: login.actualizarpassword,
+          passwordInicial: `Empleado${empleado.idempleado}`,
+        }
+      : null,
+  };
+}
   
 
   

@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/
 import { CreateLoginDto } from './dto/create-login.dto';
 import { UpdateLoginDto } from './dto/update-login.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Login } from './entities/login.entity';
+import { Login, TipoRolSistema } from './entities/login.entity';
 import * as bcrypt from "bcrypt";
 import { Repository } from 'typeorm';
 import { LoginDto } from './dto/login.dto';
@@ -14,6 +14,70 @@ export class LoginService {
     @InjectRepository(Login) private readonly loginRepository:Repository<Login>,
     private readonly jwtService:JwtService
   ){}
+
+  async cambiarRolPorEmpleado(idempleado: string, rol: TipoRolSistema) {
+  const login = await this.loginRepository.findOne({
+    where: {
+      empleado: {
+        idempleado,
+      },
+    },
+    relations: {
+      empleado: true,
+    },
+  });
+
+  if (!login) {
+    throw new BadRequestException("Login no encontrado para este empleado");
+  }
+
+  login.rol = rol;
+
+  await this.loginRepository.save(login);
+
+  return {
+    message: "Rol actualizado correctamente",
+    login: {
+      id: login.id,
+      idempleado: login.empleado.idempleado,
+      nombre: login.empleado.nombre,
+      rol: login.rol,
+      actualizarpassword: login.actualizarpassword,
+    },
+  };
+}
+
+async resetearPasswordPorEmpleado(idempleado: string) {
+  const login = await this.loginRepository.findOne({
+    where: {
+      empleado: {
+        idempleado,
+      },
+    },
+    relations: {
+      empleado: true,
+    },
+  });
+
+  if (!login) {
+    throw new BadRequestException("Login no encontrado para este empleado");
+  }
+
+  const passwordTemporal = `Empleado${idempleado}`;
+  const passwordHasheada = await bcrypt.hash(passwordTemporal, 10);
+
+  login.password = passwordHasheada;
+  login.actualizarpassword = true;
+
+  await this.loginRepository.save(login);
+
+  return {
+    message: "Contraseña restablecida correctamente",
+    usuario: login.empleado.idempleado,
+    passwordTemporal,
+    actualizarpassword: login.actualizarpassword,
+  };
+}
   async login(loginDto: LoginDto) {
     const usuario = await this.loginRepository.findOne({
       where: {

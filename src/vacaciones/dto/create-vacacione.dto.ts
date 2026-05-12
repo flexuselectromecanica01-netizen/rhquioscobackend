@@ -25,56 +25,45 @@ export class CreateVacacioneDto {
     message: "El tipo de empleado no es válido",
   })
   tipoempleado: TipoEmpleadoEnum;
-
-  @Column({
-    type: "varchar",
-    length: 100,
-  })
+@IsString()
+@MaxLength(100)
   area: string;
-@Column({
-    type: "varchar",
-    length: 100,
-  })
+@IsString()
+@MaxLength(100)
   puesto: string;
 
   @IsDateString({}, {
     message: "La fecha de ingreso debe tener un formato válido",
   })
-  fechaingreso: string;
+  fechaingreso?: string;
 
   @IsInt({
     message: "La antigüedad debe ser un número entero",
   })
-  @Min(0, {
-    message: "La antigüedad no puede ser menor a 0",
-  })
   @Max(60, {
     message: "La antigüedad no puede ser mayor a 60",
   })
-  antiguedad: number;
+  antiguedad?: number;
 
 
   @IsInt({
     message: "Los dias derecho debe ser un número entero",
   })
-  @Min(0, {
-    message: "Los dias derecho no puede ser menor a 0",
-  })
   @Max(60, {
     message: "Los dias derecho no puede ser mayor a 60",
   })
-  diasderecho: number;
+  diasderecho?: number;
 
 
    @IsDateString({}, {
     message: "La fecha de ingreso debe tener un formato válido",
   })
-  iniciocicloactual: string;
+  iniciocicloactual?: string;
 
   @IsDateString({}, {
     message: "La fecha de ingreso debe tener un formato válido",
   })
-  fincicloactual: string;
+  fincicloactual?: string;
 
   @IsNumber(
     { maxDecimalPlaces: 2 },
@@ -82,20 +71,16 @@ export class CreateVacacioneDto {
       message: "El proporcional devengado debe ser un número con máximo 2 decimales",
     },
   )
-  @Min(0)
   @Max(999.99)
-  proporcionaldevengado: number;
+  proporcionaldevengado?: number;
 
     @IsInt({
     message: "Los dias tomados debe ser un número entero",
   })
-  @Min(0, {
-    message: "Los dias tomados no puede ser menor a 0",
-  })
   @Max(60, {
     message: "Los dias tomados no puede ser mayor a 60",
   })
-  diastomados: number;
+  diastomados?: number;
 
  @IsNumber(
     { maxDecimalPlaces: 2 },
@@ -109,30 +94,24 @@ export class CreateVacacioneDto {
   @Max(9999.99, {
     message: "El saldo disponible no puede ser mayor a 9999.99",
   })
-  saldodisponible: number;
+  saldodisponible?: number;
 
 
    @IsInt({
     message: "Los dias por vencer debe ser un número entero",
   })
-  @Min(0, {
-    message: "Los dias por vencer no puede ser menor a 0",
-  })
   @Max(60, {
     message: "Los dias por vencer no puede ser mayor a 60",
   })
-  diasporvencer: number;
+  diasporvencer?: number;
 
   @IsInt({
     message: "Los dias a vencer debe ser un número entero",
   })
-  @Min(0, {
-    message: "Los dias a vencer no puede ser menor a 0",
-  })
   @Max(60, {
     message: "Los dias a vencer no puede ser mayor a 60",
   })
-  diasavencer: number;
+  diasavencer?: number;
 
      @IsEnum(SemaforoEnum, {
     message: "El semaforo no es válido",

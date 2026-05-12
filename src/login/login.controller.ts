@@ -4,6 +4,7 @@ import { CreateLoginDto } from './dto/create-login.dto';
 import { UpdateLoginDto } from './dto/update-login.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { TipoRolSistema } from './entities/login.entity';
 
 @Controller('login')
 export class LoginController {
@@ -12,6 +13,19 @@ export class LoginController {
   @Post()
   login(@Body() loginDto: LoginDto) {
     return this.loginService.login(loginDto);
+  }
+
+  @Patch("admin/:idempleado/rol")
+  cambiarRol(
+    @Param("idempleado") idempleado: string,
+    @Body("rol") rol: TipoRolSistema,
+  ) {
+    return this.loginService.cambiarRolPorEmpleado(idempleado, rol);
+  }
+
+  @Patch("admin/:idempleado/reset-password")
+  resetearPassword(@Param("idempleado") idempleado: string) {
+    return this.loginService.resetearPasswordPorEmpleado(idempleado);
   }
 
   @UseGuards(JwtAuthGuard)

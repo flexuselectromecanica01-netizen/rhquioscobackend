@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UploadedFile, UseInterceptors, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UploadedFile, UseInterceptors, Query, ParseIntPipe } from '@nestjs/common';
 import { VacacionesService } from './vacaciones.service';
 import { CreateVacacioneDto } from './dto/create-vacacione.dto';
 import { UpdateVacacioneDto } from './dto/update-vacacione.dto';
@@ -12,6 +12,10 @@ export class VacacionesController {
   @Get("empleado/:idempleado")
 findByIdEmpleado(@Param("idempleado") idempleado: string) {
   return this.vacacionesService.findByIdEmpleado(idempleado);
+}
+@Get("detalle/:id")
+findDetalleEmpleadoConLogin(@Param("id", ParseIntPipe) id: number) {
+  return this.vacacionesService.findDetalleEmpleadoConLogin(id);
 }
 
   @Get("paginado")
