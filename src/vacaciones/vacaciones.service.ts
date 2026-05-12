@@ -3,6 +3,7 @@ import { CreateVacacioneDto } from './dto/create-vacacione.dto';
 import { UpdateVacacioneDto } from './dto/update-vacacione.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as XLSX from 'xlsx';
+import { Solicitude } from "../solicitudes/entities/solicitude.entity";
 import * as bcrypt from "bcrypt";
 import { Vacacione } from './entities/vacacione.entity';
 import { Repository } from 'typeorm';
@@ -232,10 +233,36 @@ export class VacacionesService {
   }
 
   async remove(id: number) {
-    const vacaciones = await this.findOne(id)
-    await this.vacacionesRepository.remove(vacaciones)
-    return {message:'vacaciones eliminadas'};
-  }
+  return this.vacacionesRepository.manager.transaction(async (manager) => {
+    const empleado = await manager.findOne(Vacacione, {
+      where: { id },
+    });
+
+    if (!empleado) {
+      throw new NotFoundException("Empleado no encontrado");
+    }
+
+    await manager.delete(Login, {
+      empleado: {
+        idempleado: empleado.idempleado,
+      },
+    });
+
+    await manager.delete(Solicitude, {
+      empleado: {
+        idempleado: empleado.idempleado,
+      },
+    });
+
+    await manager.delete(Vacacione, {
+      id: empleado.id,
+    });
+
+    return {
+      message: "Empleado eliminado correctamente",
+    };
+  });
+}
 
   async findByIdEmpleado(idempleado: string) {
   const empleado = await this.vacacionesRepository.findOne({
