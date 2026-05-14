@@ -21,32 +21,40 @@ export class VacacionesService {
     return `Empleado${idempleado}`;
   }
 
-  async findAllPaginado(page=1,limit=10){
-    const currentPage = Number(page) || 1;
-    const currentLimit = Number(limit) || 10
+  async findAllPaginado(page = 1, limit = 10, idempleado?: string) {
+  const currentPage = Number(page) || 1;
+  const currentLimit = Number(limit) || 10;
 
-    const skip = (currentPage - 1) * currentLimit
+  const skip = (currentPage - 1) * currentLimit;
 
-    const[data,total]=await this.vacacionesRepository.findAndCount({
-      relations:{
-        solicitudes:true
-      },
-      order:{
-        id:"ASC"
-      },
-      skip,
-      take:currentLimit
-    })
-    return{
-      data,
-      meta:{
-        total,
-        page:currentPage,
-        limit:currentLimit,
-        totalPages:Math.ceil(total/currentLimit)
+  const where = idempleado
+    ? {
+        idempleado: idempleado.trim().padStart(4, "0"),
       }
-    }
-  }
+    : {};
+
+  const [data, total] = await this.vacacionesRepository.findAndCount({
+    where,
+    relations: {
+      solicitudes: true,
+    },
+    order: {
+      id: "ASC",
+    },
+    skip,
+    take: currentLimit,
+  });
+
+  return {
+    data,
+    meta: {
+      total,
+      page: currentPage,
+      limit: currentLimit,
+      totalPages: Math.ceil(total / currentLimit),
+    },
+  };
+}
 
   async create(createVacacioneDto: CreateVacacioneDto) {
   return this.vacacionesRepository.manager.transaction(async (manager) => {
@@ -228,6 +236,29 @@ export class VacacionesService {
 
   async update(id: number, updateVacacioneDto: UpdateVacacioneDto) {
     const vacaciones = await this.findOne(id)
+    if(!vacaciones){
+      throw new NotFoundException("Empleado no encontrado")
+    }
+    if(vacaciones.idempleado ==="0001" && updateVacacioneDto.idempleado && updateVacacioneDto.idempleado !== "0001"){
+      throw new BadRequestException("No puedes cambiar el ID del administrador principal")
+    }
+
+     if (
+    updateVacacioneDto.idempleado &&
+    updateVacacioneDto.idempleado !== vacaciones.idempleado
+  ) {
+    const empleadoConMismoId = await this.vacacionesRepository.findOne({
+      where: {
+        idempleado: updateVacacioneDto.idempleado,
+      },
+    });
+
+    if (empleadoConMismoId && empleadoConMismoId.id !== id) {
+      throw new BadRequestException(
+        `El ID empleado ${updateVacacioneDto.idempleado} ya está registrado`
+      );
+    }
+  }
     Object.assign(vacaciones,updateVacacioneDto) 
     return await this.vacacionesRepository.save(vacaciones);
   }
@@ -240,6 +271,10 @@ export class VacacionesService {
 
     if (!empleado) {
       throw new NotFoundException("Empleado no encontrado");
+    }
+
+    if(!empleado){
+      throw new BadRequestException("El administrador principal no se puede eliminar")
     }
 
     await manager.delete(Login, {

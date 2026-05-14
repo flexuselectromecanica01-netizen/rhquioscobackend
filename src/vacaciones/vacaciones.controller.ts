@@ -19,8 +19,8 @@ findDetalleEmpleadoConLogin(@Param("id", ParseIntPipe) id: number) {
 }
 
   @Get("paginado")
-  findAllPaginado(@Query("page") page?: string,@Query("limit") limit?:string){
-    return this.vacacionesService.findAllPaginado(Number(page) || 1,Number(limit) || 10)
+  findAllPaginado(@Query("page") page?: string,@Query("limit") limit?:string, @Query("idempleado") idempleado?:string){
+    return this.vacacionesService.findAllPaginado(Number(page) || 1,Number(limit) || 10,idempleado)
   }
 
 

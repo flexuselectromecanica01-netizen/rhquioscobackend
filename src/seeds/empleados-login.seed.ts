@@ -203,11 +203,16 @@ export async function seedEmpleadosLogin(dataSource: DataSource) {
         empleado,
         password: passwordHasheada,
         actualizarpassword: true,
-        rol: TipoRolSistema.EMPLEADO,
+        rol: idempleado ==="0001" ? TipoRolSistema.ADMINISTRADOR : TipoRolSistema.EMPLEADO            
       });
 
       await loginRepository.save(login);
       loginsInsertados++;
+    }else{
+      if(idempleado==="0001" && loginExistente.rol !==TipoRolSistema.ADMINISTRADOR){
+        loginExistente.rol = TipoRolSistema.ADMINISTRADOR
+        await loginRepository.save(loginExistente)
+      }
     }
   }
 

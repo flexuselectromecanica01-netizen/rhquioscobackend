@@ -31,6 +31,10 @@ export class LoginService {
     throw new BadRequestException("Login no encontrado para este empleado");
   }
 
+  if( login.empleado.idempleado === "0001" &&  rol !== TipoRolSistema.ADMINISTRADOR){
+    throw new BadRequestException("El usuario 0001 debe permanecer como ADMINISTRADOR")
+  }
+
   login.rol = rol;
 
   await this.loginRepository.save(login);
