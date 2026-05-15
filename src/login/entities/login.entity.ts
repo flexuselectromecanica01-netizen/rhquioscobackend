@@ -85,4 +85,6 @@ rol: TipoRolSistema;
         default:LineaSistema.L1
     })
     linea:LineaSistema
+
+    
 }

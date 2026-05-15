@@ -136,6 +136,8 @@ async resetearPasswordPorEmpleado(idempleado: string) {
     nombre: usuario.empleado.nombre,
     rol: usuario.rol,
     subrol:usuario.subrol,
+    bodega:usuario.bodega,
+    linea:usuario.linea,
     actualizarpassword: usuario.actualizarpassword,
     empleado: usuario.empleado,
   };

@@ -28,6 +28,7 @@ import {
   ApiTags,
 } from "@nestjs/swagger";
 import { Vacacione } from "./entities/vacacione.entity";
+import { BodegaSistema, LineaSistema, SubrolSistema } from "../login/entities/login.entity";
 
 const ejemploEmpleado = {
   id: 4,
@@ -313,6 +314,47 @@ export class VacacionesController {
   findByArea(@Param("area") area: string) {
     return this.vacacionesService.findByArea(area);
   }
+
+
+  @Get("autorizacion")
+@ApiOperation({
+  summary: "Buscar solicitudes por subrol, bodega y línea",
+  description:
+    "Obtiene empleados con solicitudes filtrando por subrol, bodega y línea desde la tabla login.",
+})
+@ApiQuery({
+  name: "subrol",
+  required: true,
+  example: "EMPLEADO",
+  description: "Subrol a buscar: EMPLEADO o MAESTRA",
+})
+@ApiQuery({
+  name: "bodega",
+  required: true,
+  example: "B1",
+  description: "Bodega asignada",
+})
+@ApiQuery({
+  name: "linea",
+  required: true,
+  example: "L1",
+  description: "Línea asignada",
+})
+@ApiResponse({
+  status: 200,
+  description: "Solicitudes encontradas correctamente",
+})
+findSolicitudesPorAsignacion(
+  @Query("subrol") subrol: SubrolSistema,
+  @Query("bodega") bodega: BodegaSistema,
+  @Query("linea") linea: LineaSistema,
+) {
+  return this.vacacionesService.findSolicitudesPorAsignacion(
+    subrol,
+    bodega,
+    linea,
+  );
+}
 
   @Post()
   @ApiOperation({

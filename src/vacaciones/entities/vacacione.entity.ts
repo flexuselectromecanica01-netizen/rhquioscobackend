@@ -1,6 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Solicitude } from "../../solicitudes/entities/solicitude.entity";
+import { Login } from "../../login/entities/login.entity";
 
 export enum TipoEmpleadoEnum {
   QUINCENAL = "QUINCENAL",
@@ -192,4 +193,7 @@ export class Vacacione {
 
   @OneToMany(() => Solicitude, (solicitud) => solicitud.empleado)
   solicitudes: Solicitude[];
+
+  @OneToOne(() => Login, (login) => login.empleado)
+login: Login;
 }

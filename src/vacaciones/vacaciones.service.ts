@@ -7,7 +7,7 @@ import { Solicitude } from "../solicitudes/entities/solicitude.entity";
 import * as bcrypt from "bcrypt";
 import { Vacacione } from './entities/vacacione.entity';
 import { Repository } from 'typeorm';
-import { Login, TipoRolSistema } from '../login/entities/login.entity';
+import { BodegaSistema, LineaSistema, Login, SubrolSistema, TipoRolSistema } from '../login/entities/login.entity';
 
 @Injectable()
 export class VacacionesService {
@@ -215,6 +215,41 @@ export class VacacionesService {
     }
     return vacaciones;
   }
+
+  async findSolicitudesPorAsignacion(
+  subrol: SubrolSistema,
+  bodega: BodegaSistema,
+  linea: LineaSistema,
+) {
+  const vacaciones = await this.vacacionesRepository.find({
+    where: {
+      login: {
+        subrol,
+        bodega,
+        linea,
+      },
+    },
+    relations: {
+      solicitudes: true,
+      login: true,
+    },
+    order: {
+      nombre: "ASC",
+    },
+  });
+
+  const empleadosConSolicitudes = vacaciones.filter(
+    (empleado) => empleado.solicitudes && empleado.solicitudes.length > 0,
+  );
+
+  if (empleadosConSolicitudes.length === 0) {
+    throw new NotFoundException(
+      "No existen solicitudes de vacaciones para esa bodega y línea",
+    );
+  }
+
+  return empleadosConSolicitudes;
+}
 
   async findByArea(area:string){
     const vacaciones = await this.vacacionesRepository.find({
