@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateLoginDto } from './dto/create-login.dto';
 import { UpdateLoginDto } from './dto/update-login.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -7,6 +7,7 @@ import * as bcrypt from "bcrypt";
 import { Repository } from 'typeorm';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
+import { UpdateLoginSupervisorDto } from './dto/update-login-supervisor.dto';
 
 @Injectable()
 export class LoginService {
@@ -181,8 +182,31 @@ async resetearPasswordPorEmpleado(idempleado: string) {
     return `This action returns a #${id} login`;
   }
 
-  update(id: number, updateLoginDto: UpdateLoginDto) {
-    return `This action updates a #${id} login`;
+  async update(id: number, updateLoginDto: UpdateLoginSupervisorDto) {
+    const login = await this.loginRepository.findOne({
+      where: { id },
+      relations: {
+        empleado: true,
+      },
+    });
+
+    if (!login) {
+      throw new NotFoundException("Login no encontrado");
+    }
+
+    if (updateLoginDto.rol === TipoRolSistema.ADMINISTRADOR) {
+      throw new BadRequestException(
+        "No se puede asignar el rol ADMINISTRADOR desde este módulo",
+      );
+    }
+
+    Object.assign(login, updateLoginDto);
+
+    const loginActualizado = await this.loginRepository.save(login);
+
+    return {
+      message: "Usuario actualizado correctamente",
+    };
   }
 
   remove(id: number) {

@@ -5,6 +5,7 @@ import { UpdateLoginDto } from './dto/update-login.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { TipoRolSistema } from './entities/login.entity';
+import { UpdateLoginSupervisorDto } from './dto/update-login-supervisor.dto';
 
 @Controller('login')
 export class LoginController {
@@ -51,10 +52,13 @@ export class LoginController {
     return this.loginService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateLoginDto: UpdateLoginDto) {
-    return this.loginService.update(+id, updateLoginDto);
-  }
+  @Patch(":id")
+update(
+  @Param("id") id: string,
+  @Body() updateLoginDto: UpdateLoginSupervisorDto,
+) {
+  return this.loginService.update(+id, updateLoginDto);
+}
 
   @Delete(':id')
   remove(@Param('id') id: string) {
