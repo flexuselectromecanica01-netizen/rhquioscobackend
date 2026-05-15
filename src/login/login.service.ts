@@ -160,7 +160,21 @@ async resetearPasswordPorEmpleado(idempleado: string) {
   }
 
   findAll() {
-    return `This action returns all login`;
+    return this.loginRepository
+      .createQueryBuilder('login')
+      .select([
+        'login.id AS id',
+        'login.idempleado AS idempleado',
+        'login.rol AS rol',
+        'login.subrol AS subrol',
+        'login.bodega AS bodega',
+        'login.linea AS linea',
+      ])
+      .where('login.rol != :rol', {
+        rol: TipoRolSistema.ADMINISTRADOR,
+      })
+      .orderBy('login.idempleado', 'ASC')
+      .getRawMany();
   }
 
   findOne(id: number) {
