@@ -64,6 +64,41 @@ export class VacacionesService {
       throw new BadRequestException("La fecha de ingreso es obligatoria");
     }
 
+    if (!createVacacioneDto.idempleado) {
+      throw new BadRequestException("El número de empleado es obligatorio");
+    }
+
+    const idempleado = createVacacioneDto.idempleado.trim();
+
+    const empleadoExistente = await manager.findOne(Vacacione, {
+      where: {
+        idempleado,
+      },
+    });
+
+    if (empleadoExistente) {
+      throw new BadRequestException(
+        `Ya existe un empleado con el número ${idempleado}`,
+      );
+    }
+
+    const loginExistente = await manager.findOne(Login, {
+      where: {
+        empleado: {
+          idempleado,
+        },
+      },
+      relations: {
+        empleado: true,
+      },
+    });
+
+    if (loginExistente) {
+      throw new BadRequestException(
+        `Ya existe un login registrado para el empleado ${idempleado}`,
+      );
+    }
+
     const calcularInicioCicloActual = (fecha: string) => {
       const [year, month, day] = fecha.split("-").map(Number);
       const fechaBase = new Date(year, month - 1, day);
@@ -106,6 +141,7 @@ export class VacacionesService {
 
     const empleado = manager.create(Vacacione, {
       ...createVacacioneDto,
+      idempleado,
       iniciocicloactual: inicioCicloActual,
       fincicloactual: finCicloActual,
       antiguedad: Number(createVacacioneDto.antiguedad ?? 0),
@@ -121,33 +157,20 @@ export class VacacionesService {
 
     const empleadoGuardado = await manager.save(Vacacione, empleado);
 
-    const loginExistente = await manager.findOne(Login, {
-      where: {
-        empleado: {
-          idempleado: empleadoGuardado.idempleado,
-        },
-      },
-      relations: {
-        empleado: true,
-      },
+    const passwordInicial = this.generarPasswordInicial(
+      empleadoGuardado.idempleado,
+    );
+
+    const passwordHasheada = await bcrypt.hash(passwordInicial, 10);
+
+    const login = manager.create(Login, {
+      empleado: empleadoGuardado,
+      password: passwordHasheada,
+      actualizarpassword: true,
+      rol: TipoRolSistema.EMPLEADO,
     });
 
-    if (!loginExistente) {
-      const passwordInicial = this.generarPasswordInicial(
-        empleadoGuardado.idempleado,
-      );
-
-      const passwordHasheada = await bcrypt.hash(passwordInicial, 10);
-
-      const login = manager.create(Login, {
-        empleado: empleadoGuardado,
-        password: passwordHasheada,
-        actualizarpassword: true,
-        rol: TipoRolSistema.EMPLEADO,
-      });
-
-      await manager.save(Login, login);
-    }
+    await manager.save(Login, login);
 
     return {
       message: "Empleado creado correctamente",
