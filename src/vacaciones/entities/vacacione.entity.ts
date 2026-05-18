@@ -14,6 +14,11 @@ export enum SemaforoEnum {
   SINSALDO = "SINSALDO",
 }
 
+export enum TurnoEnum{
+  MATUTINO="MATUTINO",
+  NOCTURNO = "NOCTURNO"
+}
+
 @Entity()
 export class Vacacione {
   @ApiProperty({
@@ -179,6 +184,14 @@ export class Vacacione {
     enum: SemaforoEnum,
   })
   semaforo: SemaforoEnum;
+
+
+  @Column({
+    type: "enum",
+    enum: TurnoEnum,
+    default:TurnoEnum.MATUTINO
+  })
+  turno:TurnoEnum
 
   @ApiProperty({
     example: "Revisar con RH porque el saldo disponible está en negativo.",

@@ -33,6 +33,7 @@ export enum LineaSistema {
   L12 = "L12",
   L13 = "L13",
   L14 = "L14",
+  CALIDAD="CALIDAD"
 }
 
 
