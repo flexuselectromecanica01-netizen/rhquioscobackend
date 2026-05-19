@@ -56,6 +56,11 @@ const ejemploEmpleado = {
 export class VacacionesController {
   constructor(private readonly vacacionesService: VacacionesService) {}
 
+  @Patch("recalcular-ciclos")
+recalcularCiclos() {
+  return this.vacacionesService.recalcularTodosLosEmpleados();
+}
+
   @Get("empleado/:idempleado")
   @ApiOperation({
     summary: "Buscar empleado por número de empleado",

@@ -7,11 +7,13 @@ import { AreaModule } from './area/area.module';
 import { PuestoModule } from './puesto/puesto.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ScheduleModule } from "@nestjs/schedule";
 import { typeOrmConfig } from './config/typeorm.config';
 import { SolicitudesModule } from './solicitudes/solicitudes.module';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     ConfigModule.forRoot({
           isGlobal:true
         }),
