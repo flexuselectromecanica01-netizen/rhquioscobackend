@@ -75,6 +75,28 @@ private calcularDiasVacacionesLey(antiguedad: number) {
   return 32;
 }
 
+private obtenerUltimoAniversarioCumplido(fechaIngreso: string | Date, hoy = new Date()) {
+  const ingreso = this.crearFechaLocal(fechaIngreso);
+
+  let aniversario = new Date(
+    hoy.getFullYear(),
+    ingreso.getMonth(),
+    ingreso.getDate(),
+  );
+
+  // Si el aniversario de este año todavía no llega,
+  // entonces el ciclo actual inició en el aniversario del año pasado.
+  if (hoy < aniversario) {
+    aniversario = new Date(
+      hoy.getFullYear() - 1,
+      ingreso.getMonth(),
+      ingreso.getDate(),
+    );
+  }
+
+  return aniversario;
+}
+
 private calcularAntiguedad(fechaIngreso: string | Date, hoy = new Date()) {
   const ingreso = this.crearFechaLocal(fechaIngreso);
 
@@ -140,30 +162,48 @@ private calcularVacacionesPorFechaIngreso(
   const hoy = new Date();
 
   const fechaSeisMeses = this.sumarMeses(ingreso, 6);
+  const fechaPrimerAniversario = this.sumarAnios(ingreso, 1);
+
   const antiguedad = this.calcularAntiguedad(fechaIngreso, hoy);
 
   let diasderecho = 0;
   let inicioCiclo: Date;
   let finCiclo: Date;
 
-  // Menos de 6 meses
+  // ESCENARIO 1:
+  // Empleado nuevo que todavía NO cumple 6 meses.
   if (hoy < fechaSeisMeses) {
     diasderecho = 0;
+
+    // Aunque todavía no tenga días, su primer ciclo futuro inicia a los 6 meses.
     inicioCiclo = fechaSeisMeses;
+
+    // Según tu regla: al ciclo de 6 meses se le suman 4 meses.
     finCiclo = this.sumarMeses(inicioCiclo, 4);
   }
 
-  // Ya cumplió 6 meses, pero todavía no cumple 1 año
-  else if (antiguedad < 1) {
+  // ESCENARIO 2:
+  // Ya cumplió 6 meses, pero todavía NO cumple 1 año.
+  else if (hoy >= fechaSeisMeses && hoy < fechaPrimerAniversario) {
     diasderecho = 6;
+
+    // Sigue siendo el ciclo proporcional de 6 meses.
     inicioCiclo = fechaSeisMeses;
+
+    // Según tu regla: al ciclo de 6 meses se le suman 4 meses.
     finCiclo = this.sumarMeses(inicioCiclo, 4);
   }
 
-  // Ya cumplió 1 año o más
+  // ESCENARIO 3:
+  // Ya cumplió 1 año o más.
   else {
     diasderecho = this.calcularDiasVacacionesLey(antiguedad);
-    inicioCiclo = this.sumarAnios(ingreso, antiguedad);
+
+    // Aquí ya NO usamos fechaIngreso + 6 meses.
+    // Usamos el último aniversario cumplido.
+    inicioCiclo = this.obtenerUltimoAniversarioCumplido(fechaIngreso, hoy);
+
+    // Según tu regla: al ciclo anual se le suman 5 meses.
     finCiclo = this.sumarMeses(inicioCiclo, 5);
   }
 
