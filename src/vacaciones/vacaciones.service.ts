@@ -208,7 +208,7 @@ private calcularVacacionesPorFechaIngreso(
   }
 
   const proporcionaldevengado = this.calcularMesesTranscurridos(
-    inicioCiclo,
+    ingreso,
     hoy,
   );
 
