@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateLoginDto } from './dto/create-login.dto';
 import { UpdateLoginDto } from './dto/update-login.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -54,6 +54,28 @@ export class LoginService {
     },
   };
 }
+
+  
+
+  async verifyPassword(password:string,usuarioToken:any){
+    const login = await this.loginRepository.findOne({
+      where:{
+        id:usuarioToken.sub
+      }
+    })
+    if(!login){
+      throw new NotFoundException("Usuario autenticado no encontrado")
+    }
+    const passwordValida = await bcrypt.compare(password,login.password)
+    if(!passwordValida){
+      throw new ForbiddenException("La contraseña no es correcta")
+    }
+
+    return{
+      ok:true
+    }
+  }
+
 
 async resetearPasswordPorEmpleado(idempleado: string) {
   const login = await this.loginRepository.findOne({

@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Column, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, DeleteDateColumn, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Solicitude } from "../../solicitudes/entities/solicitude.entity";
 import { Login } from "../../login/entities/login.entity";
 
@@ -209,4 +209,10 @@ export class Vacacione {
 
   @OneToOne(() => Login, (login) => login.empleado)
 login: Login;
+
+@DeleteDateColumn({
+  name: "deleted_at",
+  nullable: true,
+})
+deletedAt: Date | null;
 }

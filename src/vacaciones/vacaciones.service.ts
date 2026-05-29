@@ -1,6 +1,7 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateVacacioneDto } from './dto/create-vacacione.dto';
 import { UpdateVacacioneDto } from './dto/update-vacacione.dto';
+import { IsNull, Not } from "typeorm";
 import { InjectRepository } from '@nestjs/typeorm';
 import * as XLSX from 'xlsx';
 import { Solicitude } from "../solicitudes/entities/solicitude.entity";
@@ -73,6 +74,27 @@ private calcularDiasVacacionesLey(antiguedad: number) {
   if (antiguedad >= 31 && antiguedad <= 35) return 32;
 
   return 32;
+}
+
+async restore(id: number) {
+  const empleado = await this.vacacionesRepository.findOne({
+    where: { id },
+    withDeleted: true,
+  });
+
+  if (!empleado) {
+    throw new NotFoundException("Empleado no encontrado");
+  }
+
+  if (!empleado.deletedAt) {
+    throw new BadRequestException("El empleado no está eliminado");
+  }
+
+  await this.vacacionesRepository.restore(id);
+
+  return {
+    message: "Empleado restaurado correctamente",
+  };
 }
 
 private obtenerUltimoAniversarioCumplido(fechaIngreso: string | Date, hoy = new Date()) {
@@ -268,7 +290,6 @@ private calcularVacacionesPorFechaIngreso(
     },
   };
 }
-
   async create(createVacacioneDto: CreateVacacioneDto) {
   return this.vacacionesRepository.manager.transaction(async (manager) => {
     const fechaIngreso = createVacacioneDto.fechaingreso;
@@ -800,6 +821,58 @@ async findAllEmpleadosConSolicitudes() {
         errores,
       };
     });
+  }
+
+  async findEliminadosPaginado(
+  page: number = 1,
+  limit: number = 5,
+  idempleado?: string
+) {
+  const skip = (page - 1) * limit;
+
+  const where: any = {
+    deletedAt: Not(IsNull()),
+  };
+
+  if (idempleado && idempleado.trim() !== "") {
+    where.idempleado = idempleado.trim();
+  }
+
+  const [data, total] = await this.vacacionesRepository.findAndCount({
+    withDeleted: true,
+    where,
+    skip,
+    take: limit,
+    order: {
+      deletedAt: "DESC",
+    },
+  });
+
+  return {
+    data,
+    meta: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+}
+
+  async softDelete(id:number){
+    const empleado = await this.vacacionesRepository.findOne({
+      where:{id}
+    })
+    if(!empleado){
+      throw new NotFoundException("Empleado no encontrado")
+    }
+    if(empleado.idempleado==="0001"){
+      throw new ForbiddenException("El usuario administrador principal no se puede eliminar")
+    }
+    await this.vacacionesRepository.softDelete(id)
+    return{
+      message:"Empleado eliminado correctamente"
+    }
   }
 
   private formatearFechaExcel(value: any): string {

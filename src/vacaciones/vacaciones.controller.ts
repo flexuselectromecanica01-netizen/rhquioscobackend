@@ -137,7 +137,33 @@ recalcularCiclos() {
   findDetalleEmpleadoConLogin(@Param("id", ParseIntPipe) id: number) {
     return this.vacacionesService.findDetalleEmpleadoConLogin(id);
   }
+  
+  @Delete(":id/soft")
+  @UseGuards(JwtAuthGuard)
+  softDelete(@Param("id") id:string){
+    return this.vacacionesService.softDelete(+id)
+  }
 
+
+  @Get("eliminados/paginado")
+@UseGuards(JwtAuthGuard)
+findEliminadosPaginado(
+  @Query("page") page = "1",
+  @Query("limit") limit = "5",
+  @Query("idempleado") idempleado?: string
+) {
+  return this.vacacionesService.findEliminadosPaginado(
+    Number(page),
+    Number(limit),
+    idempleado
+  );
+}
+
+@Patch(":id/restore")
+@UseGuards(JwtAuthGuard)
+restore(@Param("id") id: string) {
+  return this.vacacionesService.restore(+id);
+}
   @Get("paginado")
   @ApiOperation({
     summary: "Listar empleados paginados",
@@ -725,3 +751,5 @@ findSolicitudesPorAsignacion(
     return this.vacacionesService.importarDesdeJson(body.empleados);
   }
 }
+
+

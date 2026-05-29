@@ -6,6 +6,7 @@ import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { TipoRolSistema } from './entities/login.entity';
 import { UpdateLoginSupervisorDto } from './dto/update-login-supervisor.dto';
+import { VerifyPasswordDto } from './dto/verify-password.dto';
 
 @Controller('login')
 export class LoginController {
@@ -27,6 +28,13 @@ export class LoginController {
   @Patch("admin/:idempleado/reset-password")
   resetearPassword(@Param("idempleado") idempleado: string) {
     return this.loginService.resetearPasswordPorEmpleado(idempleado);
+  }
+
+
+  @Post("verify-password")
+  @UseGuards(JwtAuthGuard)
+  verifyPassword(@Body() dto:VerifyPasswordDto, @Req() req:any){
+    return this.loginService.verifyPassword(dto.password,req.user)
   }
 
   @UseGuards(JwtAuthGuard)
