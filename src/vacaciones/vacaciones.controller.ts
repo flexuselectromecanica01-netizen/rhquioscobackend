@@ -138,11 +138,7 @@ recalcularCiclos() {
     return this.vacacionesService.findDetalleEmpleadoConLogin(id);
   }
   
-  @Delete(":id/soft")
-  @UseGuards(JwtAuthGuard)
-  softDelete(@Param("id") id:string){
-    return this.vacacionesService.softDelete(+id)
-  }
+
 
 
   @Get("eliminados/paginado")
@@ -159,11 +155,7 @@ findEliminadosPaginado(
   );
 }
 
-@Patch(":id/restore")
-@UseGuards(JwtAuthGuard)
-restore(@Param("id") id: string) {
-  return this.vacacionesService.restore(+id);
-}
+
   @Get("paginado")
   @ApiOperation({
     summary: "Listar empleados paginados",
@@ -539,6 +531,18 @@ findSolicitudesPorAsignacion(
       },
     },
   })
+  
+    @Delete(":id/soft")
+  @UseGuards(JwtAuthGuard)
+  softDelete(@Param("id") id:string){
+    return this.vacacionesService.softDelete(+id)
+  }
+
+  @Patch(":id/restore")
+@UseGuards(JwtAuthGuard)
+restore(@Param("id") id: string) {
+  return this.vacacionesService.restore(+id);
+}
   findOne(@Param("id") id: string) {
     return this.vacacionesService.findOne(+id);
   }
