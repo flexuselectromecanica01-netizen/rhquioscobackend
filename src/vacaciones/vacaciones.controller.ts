@@ -12,6 +12,7 @@ import {
   Query,
   ParseIntPipe,
 } from "@nestjs/common";
+
 import { VacacionesService } from "./vacaciones.service";
 import { CreateVacacioneDto } from "./dto/create-vacacione.dto";
 import { UpdateVacacioneDto } from "./dto/update-vacacione.dto";
