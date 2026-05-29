@@ -28,6 +28,9 @@ export class LoginService {
     },
   });
 
+
+  
+
   if (!login) {
     throw new BadRequestException("Login no encontrado para este empleado");
   }
@@ -94,6 +97,8 @@ async resetearPasswordPorEmpleado(idempleado: string) {
         empleado: true,
       },
     });
+
+    
 
     if (!usuario) {
       throw new UnauthorizedException("Usuario no existe");
