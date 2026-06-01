@@ -533,20 +533,26 @@ findSolicitudesPorAsignacion(
     },
   })
   
-    @Delete(":id/soft")
-  @UseGuards(JwtAuthGuard)
-  softDelete(@Param("id") id:string){
-    return this.vacacionesService.softDelete(+id)
-  }
+ @UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
+@Delete(":id/soft")
+softDelete(@Param("id") id: string) {
+  return this.vacacionesService.softDelete(+id);
+}
 
-  @Patch(":id/restore")
 @UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
+@Patch(":id/restore")
 restore(@Param("id") id: string) {
   return this.vacacionesService.restore(+id);
 }
-  findOne(@Param("id") id: string) {
-    return this.vacacionesService.findOne(+id);
-  }
+
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
+@Get(":id")
+findOne(@Param("id") id: string) {
+  return this.vacacionesService.findOne(+id);
+}
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
