@@ -77,8 +77,8 @@ private contarDiasHabiles(fechaInicio: string, fechaTermino: string): number {
     throw new NotFoundException("Empleado no encontrado");
   }
 
-  const fechaInicio = this.convertirFechaLocal(createSolicitudeDto.fechainicio);
-  const fechaTermino = this.convertirFechaLocal(createSolicitudeDto.fechatermino);
+  const fechaInicio = this.convertirFechaLocal(createSolicitudeDto.iniciocicloactual);
+  const fechaTermino = this.convertirFechaLocal(createSolicitudeDto.fincicloactual);
 
   if (fechaTermino < fechaInicio) {
     throw new BadRequestException(
@@ -87,8 +87,8 @@ private contarDiasHabiles(fechaInicio: string, fechaTermino: string): number {
   }
 
   const diastotales = this.contarDiasHabiles(
-    createSolicitudeDto.fechainicio,
-    createSolicitudeDto.fechatermino,
+    createSolicitudeDto.iniciocicloactual,
+    createSolicitudeDto.fincicloactual,
   );
 
   if (diastotales <= 0) {
@@ -106,8 +106,8 @@ private contarDiasHabiles(fechaInicio: string, fechaTermino: string): number {
   }
 
   const solicitud = this.solicitudesRepository.create({
-    fechainicio: createSolicitudeDto.fechainicio,
-    fechatermino: createSolicitudeDto.fechatermino,
+    fechainicio: createSolicitudeDto.iniciocicloactual,
+    fechatermino: createSolicitudeDto.fincicloactual,
     diastotales,
     estatus: EstatusSolicitud.PENDIENTE,
     empleado,
