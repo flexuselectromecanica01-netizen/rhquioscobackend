@@ -6,10 +6,11 @@ import { Solicitude } from './entities/solicitude.entity';
 import { Vacacione } from '../vacaciones/entities/vacacione.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { MailModule } from '../mail/mail.module';
+import { Login } from '../login/entities/login.entity';
 
 @Module({
   imports:[
-    TypeOrmModule.forFeature([Solicitude,Vacacione]),
+    TypeOrmModule.forFeature([Solicitude,Vacacione,Login]),
     MailModule
     ,
     JwtModule.register({

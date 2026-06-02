@@ -1,4 +1,5 @@
 import { Injectable, InternalServerErrorException } from "@nestjs/common";
+import * as path from "path";
 import * as nodemailer from "nodemailer";
 
 type EnviarCorreoVacacionesParams = {
@@ -22,6 +23,272 @@ export class MailService {
       pass: process.env.SMTP_PASS,
     },
   });
+  async enviarCorreoNuevaSolicitudVacaciones({
+  correoElectronico,
+  destinatario,
+  tipoResponsable,
+  empleado,
+  idempleado,
+  area,
+  bodega,
+  linea,
+  saldoDisponible,
+  fechaIngreso,
+  fechaInicio,
+  fechaFin,
+  diasSolicitados,
+}: {
+  correoElectronico: string;
+  destinatario: string;
+  tipoResponsable: string;
+  empleado: string;
+  idempleado: string;
+  area: string;
+  bodega: string;
+  linea: string;
+  saldoDisponible: string | number;
+  fechaIngreso: string;
+  fechaInicio: string;
+  fechaFin: string;
+  diasSolicitados: number;
+}) {
+  try {
+    const asunto = "Nueva solicitud de vacaciones pendiente";
+
+    const fechaInicioLegible = this.formatearFechaCorreo(fechaInicio);
+    const fechaFinLegible = this.formatearFechaCorreo(fechaFin);
+    const fechaIngresoLegible = this.formatearFechaCorreo(fechaIngreso);
+
+    const calendarioHtml = this.generarCalendariosDinamicosHtml(
+      fechaInicio,
+      fechaFin,
+    );
+
+    const html = `
+      <div style="font-family: Arial, Helvetica, sans-serif; background:#f3f4f6; padding:30px; color:#374151;">
+        <table width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            <td align="center">
+              <table width="650" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:14px; overflow:hidden; border:1px solid #e5e7eb;">
+                <tr>
+                  <td style="background:#24282c; color:#ffffff; padding:24px; text-align:center;">
+                    <h2 style="margin:0; font-size:22px;">RH Quiosco</h2>
+                    <p style="margin:6px 0 0; color:#d1d5db; font-size:14px;">
+                      Nueva solicitud de vacaciones
+                    </p>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="padding:28px;">
+                    <p style="font-size:15px; line-height:1.6;">
+                      Hola, <strong>${destinatario}</strong>.
+                    </p>
+
+                    <p style="font-size:15px; line-height:1.6;">
+                      El colaborador <strong>${empleado}</strong> envió una nueva solicitud de vacaciones pendiente de autorización.
+                    </p>
+
+                    <p style="font-size:14px; color:#6b7280;">
+                      Esta notificación fue enviada automáticamente porque tu usuario está registrado como
+                      <strong>${tipoResponsable}</strong>.
+                    </p>
+
+                    <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse; border:1px solid #e5e7eb; margin-top:18px;">
+                      <tr>
+                        <td style="padding:12px; background:#f9fafb; font-weight:bold;">Empleado</td>
+                        <td style="padding:12px;">${empleado}</td>
+                      </tr>
+
+                      <tr>
+                        <td style="padding:12px; background:#f9fafb; font-weight:bold;">ID empleado</td>
+                        <td style="padding:12px;">${idempleado}</td>
+                      </tr>
+
+                      <tr>
+                        <td style="padding:12px; background:#f9fafb; font-weight:bold;">Área</td>
+                        <td style="padding:12px;">${area}</td>
+                      </tr>
+
+                      <tr>
+                        <td style="padding:12px; background:#f9fafb; font-weight:bold;">Bodega</td>
+                        <td style="padding:12px;">${bodega}</td>
+                      </tr>
+
+                      <tr>
+                        <td style="padding:12px; background:#f9fafb; font-weight:bold;">Línea</td>
+                        <td style="padding:12px;">${linea}</td>
+                      </tr>
+
+                      <tr>
+                        <td style="padding:12px; background:#f9fafb; font-weight:bold;">Saldo disponible</td>
+                        <td style="padding:12px;">${saldoDisponible}</td>
+                      </tr>
+
+                      <tr>
+                        <td style="padding:12px; background:#f9fafb; font-weight:bold;">Fecha ingreso</td>
+                        <td style="padding:12px;">${fechaIngresoLegible}</td>
+                      </tr>
+
+                      <tr>
+                        <td style="padding:12px; background:#f9fafb; font-weight:bold;">Fecha inicio</td>
+                        <td style="padding:12px;">${fechaInicioLegible}</td>
+                      </tr>
+
+                      <tr>
+                        <td style="padding:12px; background:#f9fafb; font-weight:bold;">Fecha fin</td>
+                        <td style="padding:12px;">${fechaFinLegible}</td>
+                      </tr>
+
+                      <tr>
+                        <td style="padding:12px; background:#f9fafb; font-weight:bold;">Días solicitados</td>
+                        <td style="padding:12px;">${diasSolicitados}</td>
+                      </tr>
+                    </table>
+
+                    ${calendarioHtml}
+
+                    <div style="margin-top:24px; padding:14px; background:#f0fdf4; border-left:5px solid #009b63; border-radius:10px;">
+  <p style="margin:0; font-size:14px; color:#166534;">
+    Ingresa a RH Quiosco para aprobar o rechazar esta solicitud.
+  </p>
+</div>
+
+<div style="margin-top:28px;">
+  <h3 style="margin:0 0 16px; font-size:18px; color:#111827;">
+    Instrucciones para autorizar
+  </h3>
+
+  <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <tr>
+      <td width="33.33%" valign="top" style="padding:6px;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse; border:1px solid #e5e7eb; background:#ffffff;">
+          <tr>
+            <td style="padding:10px;">
+              <p style="margin:0 0 8px; font-size:12px; font-weight:bold; color:#111827;">
+                Paso 1
+              </p>
+
+              <p style="margin:0 0 10px; font-size:11px; line-height:1.4; color:#374151;">
+                Ingresa al sistema con tus credenciales.
+              </p>
+
+              <img
+                src="cid:pasoLogin"
+                width="170"
+                alt="Paso 1"
+                style="display:block; width:170px; max-width:170px; height:auto; border:1px solid #e5e7eb;"
+              />
+            </td>
+          </tr>
+        </table>
+      </td>
+
+      <td width="33.33%" valign="top" style="padding:6px;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse; border:1px solid #e5e7eb; background:#ffffff;">
+          <tr>
+            <td style="padding:10px;">
+              <p style="margin:0 0 8px; font-size:12px; font-weight:bold; color:#111827;">
+                Paso 2
+              </p>
+
+              <p style="margin:0 0 10px; font-size:11px; line-height:1.4; color:#374151;">
+                Entra a Autorización de Vacaciones.
+              </p>
+
+              <img
+                src="cid:pasoMenu"
+                width="170"
+                alt="Paso 2"
+                style="display:block; width:170px; max-width:170px; height:auto; border:1px solid #e5e7eb;"
+              />
+            </td>
+          </tr>
+        </table>
+      </td>
+
+      <td width="33.33%" valign="top" style="padding:6px;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse; border:1px solid #e5e7eb; background:#ffffff;">
+          <tr>
+            <td style="padding:10px;">
+              <p style="margin:0 0 8px; font-size:12px; font-weight:bold; color:#111827;">
+                Paso 3
+              </p>
+
+              <p style="margin:0 0 10px; font-size:11px; line-height:1.4; color:#374151;">
+                Selecciona Aprobar o Rechazar.
+              </p>
+
+              <img
+                src="cid:pasoAutorizar"
+                width="170"
+                alt="Paso 3"
+                style="display:block; width:170px; max-width:170px; height:auto; border:1px solid #e5e7eb;"
+              />
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</div>
+    `;
+
+    const info = await this.transporter.sendMail({
+  from: process.env.SMTP_FROM,
+  to: correoElectronico,
+  subject: asunto,
+  html,
+  attachments: [
+    {
+      filename: "supervisor1.png",
+      path: path.join(
+        process.cwd(),
+        "src",
+        "mail",
+        "assets",
+        "supervisor1.png",
+      ),
+      cid: "pasoLogin",
+    },
+    {
+      filename: "supervisor2.png",
+      path: path.join(
+        process.cwd(),
+        "src",
+        "mail",
+        "assets",
+        "supervisor2.png",
+      ),
+      cid: "pasoMenu",
+    },
+    {
+      filename: "supervisor3.png",
+      path: path.join(
+        process.cwd(),
+        "src",
+        "mail",
+        "assets",
+        "supervisor3.png",
+      ),
+      cid: "pasoAutorizar",
+    },
+  ],
+});
+
+    console.log("Correo de nueva solicitud enviado correctamente");
+    console.log("Destino:", correoElectronico);
+    console.log("Message ID:", info.messageId);
+    console.log("SMTP Response:", info.response);
+
+    return info;
+  } catch (error) {
+    console.error("Error al enviar correo de nueva solicitud:", error);
+    throw new InternalServerErrorException(
+      "No se pudo enviar el correo de nueva solicitud",
+    );
+  }
+}
 
   private convertirFechaLocal(fecha: string): Date {
     const [year, month, day] = fecha.split("-").map(Number);

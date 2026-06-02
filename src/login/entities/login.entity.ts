@@ -87,5 +87,10 @@ rol: TipoRolSistema;
     })
     linea:LineaSistema
 
-    
+    @Column({
+  type: "varchar",
+  length: 120,
+  default: "sin-correo@flexuselec.com",
+})
+correoElectronico: string;
 }

@@ -6,6 +6,7 @@ import { EstatusSolicitud, Solicitude } from './entities/solicitude.entity';
 import { Repository } from 'typeorm';
 import { Vacacione } from '../vacaciones/entities/vacacione.entity';
 import { MailService } from '../mail/mail.service';
+import { Login, SubrolSistema, TipoRolSistema } from '../login/entities/login.entity';
 
 
 
@@ -66,6 +67,8 @@ private contarDiasHabiles(fechaInicio: string, fechaTermino: string): number {
   constructor(
     @InjectRepository(Solicitude) private readonly solicitudesRepository:Repository<Solicitude>,
     @InjectRepository(Vacacione) private readonly vacacionesrepository: Repository<Vacacione>,
+     @InjectRepository(Login)
+  private readonly loginRepository: Repository<Login>,
     private readonly mailService: MailService
   ){}
   async create(createSolicitudeDto: CreateSolicitudeDto, idempleado: string) {
@@ -115,7 +118,29 @@ private contarDiasHabiles(fechaInicio: string, fechaTermino: string): number {
     empleado,
   });
 
-  return this.solicitudesRepository.save(solicitud);
+ const solicitudGuardada = await this.solicitudesRepository.save(solicitud);
+
+const responsable = await this.obtenerResponsableParaNotificar(
+  empleado.idempleado,
+);
+
+await this.mailService.enviarCorreoNuevaSolicitudVacaciones({
+  correoElectronico: responsable.correoElectronico,
+  destinatario: responsable.nombreResponsable,
+  tipoResponsable: responsable.tipoResponsable,
+  empleado: empleado.nombre,
+  idempleado: empleado.idempleado,
+  area: empleado.area,
+  bodega: responsable.bodega,
+  linea: responsable.linea,
+  saldoDisponible: empleado.saldodisponible,
+ fechaIngreso: String(empleado.fechaingreso),
+  fechaInicio: solicitudGuardada.fechainicio,
+  fechaFin: solicitudGuardada.fechatermino,
+  diasSolicitados: solicitudGuardada.diastotales,
+});
+
+return solicitudGuardada;
 }
 
   async aprobarSolicitud(id: number,correoElectronico:string) {
@@ -192,6 +217,97 @@ console.log("Fechas:", solicitud.fechainicio, solicitud.fechatermino);
     },
     solicitud,
   };
+}
+
+private async obtenerResponsableParaNotificar(idempleado: string) {
+  const loginSolicitante = await this.loginRepository.findOne({
+    where: {
+      empleado: {
+        idempleado,
+      },
+    },
+    relations: {
+      empleado: true,
+    },
+  });
+
+  if (!loginSolicitante) {
+    throw new NotFoundException(
+      "No se encontró el usuario login del solicitante",
+    );
+  }
+
+  if (loginSolicitante.subrol === "EMPLEADO") {
+    const maestra = await this.loginRepository.findOne({
+      where: {
+        subrol: SubrolSistema.MAESTRA,
+        bodega: loginSolicitante.bodega,
+        linea: loginSolicitante.linea,
+      },
+      relations: {
+        empleado: true,
+      },
+    });
+
+    if (!maestra) {
+      throw new NotFoundException(
+        "No se encontró una maestra para la misma bodega y línea",
+      );
+    }
+
+    if (
+      !maestra.correoElectronico ||
+      maestra.correoElectronico === "sin-correo@flexuselec.com"
+    ) {
+      throw new BadRequestException(
+        "La maestra no tiene correo electrónico configurado",
+      );
+    }
+
+    return {
+      correoElectronico: maestra.correoElectronico,
+      nombreResponsable: maestra.empleado?.nombre ?? "Maestra",
+      tipoResponsable: "MAESTRA",
+      bodega: loginSolicitante.bodega,
+      linea: loginSolicitante.linea,
+    };
+  }
+
+  if (loginSolicitante.subrol === "MAESTRA") {
+    const supervisor = await this.loginRepository.findOne({
+      where: {
+        rol: TipoRolSistema.SUPERVISOR,
+      },
+      relations: {
+        empleado: true,
+      },
+    });
+
+    if (!supervisor) {
+      throw new NotFoundException("No se encontró un supervisor registrado");
+    }
+
+    if (
+      !supervisor.correoElectronico ||
+      supervisor.correoElectronico === "sin-correo@flexuselec.com"
+    ) {
+      throw new BadRequestException(
+        "El supervisor no tiene correo electrónico configurado",
+      );
+    }
+
+    return {
+      correoElectronico: supervisor.correoElectronico,
+      nombreResponsable: supervisor.empleado?.nombre ?? "Supervisor",
+      tipoResponsable: "SUPERVISOR",
+      bodega: loginSolicitante.bodega,
+      linea: loginSolicitante.linea,
+    };
+  }
+
+  throw new BadRequestException(
+    "No se pudo determinar a quién enviar la solicitud",
+  );
 }
 
 async rechazarSolicitud(id: number, motivorechazo: string,correoElectronico:string) {
