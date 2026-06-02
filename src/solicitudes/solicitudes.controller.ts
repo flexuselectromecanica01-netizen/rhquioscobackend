@@ -1,10 +1,20 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
-import { SolicitudesService } from './solicitudes.service';
-import { CreateSolicitudeDto } from './dto/create-solicitude.dto';
-import { UpdateSolicitudeDto } from './dto/update-solicitude.dto';
-import { JwtAuthGuard } from '../login/guards/jwt-auth.guard';
-import { RechazarSolicitudDto } from './dto/rechazar-solicitud.dto';
-
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Req,
+} from "@nestjs/common";
+import { SolicitudesService } from "./solicitudes.service";
+import { CreateSolicitudeDto } from "./dto/create-solicitude.dto";
+import { UpdateSolicitudeDto } from "./dto/update-solicitude.dto";
+import { JwtAuthGuard } from "../login/guards/jwt-auth.guard";
+import { RechazarSolicitudDto } from "./dto/rechazar-solicitud.dto";
+import { AprobarSolicitudDto } from "./dto/aprobar-solicitud";
 @Controller('solicitudes')
 export class SolicitudesController {
   constructor(private readonly solicitudesService: SolicitudesService) {}
@@ -51,18 +61,23 @@ create(
   }
 
   @Patch(":id/aprobar")
-aprobarSolicitud(@Param("id") id: string) {
-  return this.solicitudesService.aprobarSolicitud(+id);
+aprobarSolicitud(@Param("id") id: string, @Body() aprobarSolicitudDto: AprobarSolicitudDto) {
+  console.log("BODY APROBAR - ID:", id);
+  console.log("BODY APROBAR - CORREO:", aprobarSolicitudDto.correoElectronico);
+  return this.solicitudesService.aprobarSolicitud(+id,aprobarSolicitudDto.correoElectronico);
 }
 
 @Patch(":id/rechazar")
 rechazarSolicitud(
   @Param("id") id: string,
-  @Body() rechazarSolicitudDto: RechazarSolicitudDto,
+  @Body() rechazarSolicitudDto: RechazarSolicitudDto
 ) {
+  console.log("BODY APROBAR - ID:", id);
+  console.log("BODY APROBAR - CORREO:", rechazarSolicitudDto.correoElectronico);
   return this.solicitudesService.rechazarSolicitud(
     +id,
     rechazarSolicitudDto.motivorechazo,
+    rechazarSolicitudDto.correoElectronico
   );
 }
 }

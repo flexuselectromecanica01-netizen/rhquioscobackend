@@ -5,10 +5,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Solicitude } from './entities/solicitude.entity';
 import { Vacacione } from '../vacaciones/entities/vacacione.entity';
 import { JwtModule } from '@nestjs/jwt';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
   imports:[
     TypeOrmModule.forFeature([Solicitude,Vacacione]),
+    MailModule
+    ,
     JwtModule.register({
       secret: "secret",
       signOptions: {

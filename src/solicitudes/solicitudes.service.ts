@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EstatusSolicitud, Solicitude } from './entities/solicitude.entity';
 import { Repository } from 'typeorm';
 import { Vacacione } from '../vacaciones/entities/vacacione.entity';
+import { MailService } from '../mail/mail.service';
 
 
 
@@ -64,7 +65,8 @@ private contarDiasHabiles(fechaInicio: string, fechaTermino: string): number {
 }
   constructor(
     @InjectRepository(Solicitude) private readonly solicitudesRepository:Repository<Solicitude>,
-    @InjectRepository(Vacacione) private readonly vacacionesrepository: Repository<Vacacione>
+    @InjectRepository(Vacacione) private readonly vacacionesrepository: Repository<Vacacione>,
+    private readonly mailService: MailService
   ){}
   async create(createSolicitudeDto: CreateSolicitudeDto, idempleado: string) {
   const empleado = await this.vacacionesrepository.findOne({
@@ -116,7 +118,10 @@ private contarDiasHabiles(fechaInicio: string, fechaTermino: string): number {
   return this.solicitudesRepository.save(solicitud);
 }
 
-  async aprobarSolicitud(id: number) {
+  async aprobarSolicitud(id: number,correoElectronico:string) {
+    if(!correoElectronico){
+      throw new BadRequestException("El correo electronico es obligatorio")
+    }
   const solicitud = await this.solicitudesRepository.findOne({
     where: { id },
     relations: {
@@ -161,6 +166,21 @@ private contarDiasHabiles(fechaInicio: string, fechaTermino: string): number {
 
   await this.vacacionesrepository.save(empleado);
   await this.solicitudesRepository.save(solicitud);
+  console.log("Enviando correo a:", correoElectronico);
+  console.log("Solicitud aprobada en BD");
+console.log("Intentando enviar correo de APROBACIÓN");
+console.log("Correo destino:", correoElectronico);
+console.log("Empleado:", empleado.nombre);
+console.log("Fechas:", solicitud.fechainicio, solicitud.fechatermino);
+
+  await this.mailService.enviarCorreoVacaciones({
+    correoElectronico,
+    empleado:solicitud.empleado.nombre,
+    estatus:"APROBADA",
+    fechaInicio:solicitud.fechainicio,
+    fechaFin:solicitud.fechatermino,
+    diasSolicitados:solicitud.diastotales
+  })
 
   return {
     message: "Solicitud aprobada correctamente",
@@ -174,9 +194,18 @@ private contarDiasHabiles(fechaInicio: string, fechaTermino: string): number {
   };
 }
 
-async rechazarSolicitud(id: number, motivorechazo: string) {
+async rechazarSolicitud(id: number, motivorechazo: string,correoElectronico:string) {
+  if(!correoElectronico){
+    throw new BadRequestException("El correo electronico es obligatorio")
+  }
+    if (!motivorechazo || motivorechazo.trim().length === 0) {
+    throw new BadRequestException("El motivo de rechazo es obligatorio");
+  }
   const solicitud = await this.solicitudesRepository.findOne({
     where: { id },
+    relations: {
+      empleado: true,
+    },
   });
 
   if (!solicitud) {
@@ -193,6 +222,22 @@ async rechazarSolicitud(id: number, motivorechazo: string) {
   solicitud.motivorechazo = motivorechazo;
 
   await this.solicitudesRepository.save(solicitud);
+
+  console.log("Solicitud rechazada en BD");
+console.log("Intentando enviar correo de RECHAZO");
+console.log("Correo destino:", correoElectronico);
+console.log("Empleado:", solicitud.empleado.nombre);
+console.log("Motivo:", motivorechazo.trim());
+
+    await this.mailService.enviarCorreoVacaciones({
+    correoElectronico,
+    empleado: solicitud.empleado.nombre,
+    estatus: "RECHAZADA",
+    fechaInicio: solicitud.fechainicio,
+    fechaFin: solicitud.fechatermino,
+    diasSolicitados: solicitud.diastotales,
+    motivoRechazo: motivorechazo.trim(),
+  });
 
   return {
     message: "Solicitud rechazada correctamente",
