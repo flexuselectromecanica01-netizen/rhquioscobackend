@@ -7,6 +7,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { TipoRolSistema } from './entities/login.entity';
 import { UpdateLoginSupervisorDto } from './dto/update-login-supervisor.dto';
 import { VerifyPasswordDto } from './dto/verify-password.dto';
+import { UpdateEmailDto } from './dto/update-email.dto';
 
 @Controller('login')
 export class LoginController {
@@ -28,6 +29,14 @@ export class LoginController {
   @Patch("admin/:idempleado/reset-password")
   resetearPassword(@Param("idempleado") idempleado: string) {
     return this.loginService.resetearPasswordPorEmpleado(idempleado);
+  }
+
+  @Patch(":id/update-email")
+  updateEmail(
+    @Param("id") id: string,
+    @Body() updateEmailDto: UpdateEmailDto,
+  ) {
+    return this.loginService.updateEmail(Number(id), updateEmailDto);
   }
 
 

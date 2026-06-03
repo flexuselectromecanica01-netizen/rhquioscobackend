@@ -124,7 +124,8 @@ const responsable = await this.obtenerResponsableParaNotificar(
   empleado.idempleado,
 );
 
-await this.mailService.enviarCorreoNuevaSolicitudVacaciones({
+try {
+  await this.mailService.enviarCorreoNuevaSolicitudVacaciones({
   correoElectronico: responsable.correoElectronico,
   destinatario: responsable.nombreResponsable,
   tipoResponsable: responsable.tipoResponsable,
@@ -138,7 +139,12 @@ await this.mailService.enviarCorreoNuevaSolicitudVacaciones({
   fechaInicio: solicitudGuardada.fechainicio,
   fechaFin: solicitudGuardada.fechatermino,
   diasSolicitados: solicitudGuardada.diastotales,
-});
+})  
+} catch (error) {
+  throw new BadRequestException("Correo no valido al enviar")
+}
+
+
 
 return solicitudGuardada;
 }

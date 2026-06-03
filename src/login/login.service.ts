@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { UpdateLoginSupervisorDto } from './dto/update-login-supervisor.dto';
+import { UpdateEmailDto } from './dto/update-email.dto';
 
 @Injectable()
 export class LoginService {
@@ -208,6 +209,33 @@ async resetearPasswordPorEmpleado(idempleado: string) {
       .orderBy('login.idempleado', 'ASC')
       .getRawMany();
   }
+
+
+  async updateEmail(id: number, updateEmailDto: UpdateEmailDto) {
+  const usuario = await this.loginRepository.findOne({
+    where: { id },
+  });
+
+  if (!usuario) {
+    throw new NotFoundException("Usuario no encontrado");
+  }
+
+  const correoExistente = await this.loginRepository.findOne({
+    where: { correoElectronico: updateEmailDto.correoElectronico },
+  });
+
+  if (correoExistente && correoExistente.id !== id) {
+    throw new BadRequestException("Este correo electrónico ya está en uso");
+  }
+
+  usuario.correoElectronico = updateEmailDto.correoElectronico;
+
+  await this.loginRepository.save(usuario);
+
+  return {
+    message: "Correo electrónico actualizado correctamente"
+  };
+}
 
   findOne(id: number) {
     return `This action returns a #${id} login`;
