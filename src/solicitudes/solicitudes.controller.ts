@@ -62,8 +62,6 @@ create(
 
   @Patch(":id/aprobar")
 aprobarSolicitud(@Param("id") id: string, @Body() aprobarSolicitudDto: AprobarSolicitudDto) {
-  console.log("BODY APROBAR - ID:", id);
-  console.log("BODY APROBAR - CORREO:", aprobarSolicitudDto.correoElectronico);
   return this.solicitudesService.aprobarSolicitud(+id,aprobarSolicitudDto.correoElectronico);
 }
 

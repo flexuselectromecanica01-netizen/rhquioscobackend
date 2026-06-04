@@ -96,9 +96,6 @@ export class CreateVacacioneDto {
   @IsInt({
     message: "La antigüedad debe ser un número entero",
   })
-  @Max(60, {
-    message: "La antigüedad no puede ser mayor a 60",
-  })
   antiguedad?: number;
 
   @ApiPropertyOptional({
@@ -108,9 +105,6 @@ export class CreateVacacioneDto {
   })
   @IsInt({
     message: "Los dias derecho debe ser un número entero",
-  })
-  @Max(60, {
-    message: "Los dias derecho no puede ser mayor a 60",
   })
   diasderecho?: number;
 
@@ -161,9 +155,6 @@ export class CreateVacacioneDto {
   @IsInt({
     message: "Los dias tomados debe ser un número entero",
   })
-  @Max(60, {
-    message: "Los dias tomados no puede ser mayor a 60",
-  })
   diastomados?: number;
 
   @ApiPropertyOptional({
@@ -194,9 +185,6 @@ export class CreateVacacioneDto {
   @IsInt({
     message: "Los dias por vencer debe ser un número entero",
   })
-  @Max(60, {
-    message: "Los dias por vencer no puede ser mayor a 60",
-  })
   diasporvencer?: number;
 
   @ApiPropertyOptional({
@@ -207,9 +195,7 @@ export class CreateVacacioneDto {
   @IsInt({
     message: "Los dias a vencer debe ser un número entero",
   })
-  @Max(60, {
-    message: "Los dias a vencer no puede ser mayor a 60",
-  })
+  @IsOptional()
   diasavencer?: number;
 
   @ApiProperty({
@@ -220,6 +206,7 @@ export class CreateVacacioneDto {
   @IsEnum(SemaforoEnum, {
     message: "El semaforo no es válido",
   })
+  @IsOptional()
   semaforo: SemaforoEnum;
 
   @ApiPropertyOptional({
@@ -234,5 +221,6 @@ export class CreateVacacioneDto {
   @MaxLength(2000, {
     message: "La acción sugerida no puede superar los 2000 caracteres",
   })
+  @IsOptional()
   accionsugerida?: string;
 }
