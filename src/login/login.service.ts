@@ -2,9 +2,9 @@ import { BadRequestException, ForbiddenException, Injectable, NotFoundException,
 import { CreateLoginDto } from './dto/create-login.dto';
 import { UpdateLoginDto } from './dto/update-login.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Login, TipoRolSistema } from './entities/login.entity';
+import { Login, SubrolSistema, TipoRolSistema } from './entities/login.entity';
 import * as bcrypt from "bcrypt";
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { UpdateLoginSupervisorDto } from './dto/update-login-supervisor.dto';
@@ -242,31 +242,59 @@ async resetearPasswordPorEmpleado(idempleado: string) {
   }
 
   async update(id: number, updateLoginDto: UpdateLoginSupervisorDto) {
-    const login = await this.loginRepository.findOne({
-      where: { id },
+  const login = await this.loginRepository.findOne({
+    where: { id },
+    relations: {
+      empleado: true,
+    },
+  });
+
+  if (!login) {
+    throw new NotFoundException("Login no encontrado");
+  }
+
+  if (updateLoginDto.rol === TipoRolSistema.ADMINISTRADOR) {
+    throw new BadRequestException(
+      "No se puede asignar el rol ADMINISTRADOR desde este módulo",
+    );
+  }
+
+  const nuevoSubrol = updateLoginDto.subrol ?? login.subrol;
+  const nuevaBodega = updateLoginDto.bodega ?? login.bodega;
+  const nuevaLinea = updateLoginDto.linea ?? login.linea;
+
+  if (nuevoSubrol === SubrolSistema.MAESTRA) {
+    const maestraExistente = await this.loginRepository.findOne({
+      where: {
+        id: Not(login.id),
+        subrol: SubrolSistema.MAESTRA,
+        bodega: nuevaBodega,
+        linea: nuevaLinea,
+      },
       relations: {
         empleado: true,
       },
     });
 
-    if (!login) {
-      throw new NotFoundException("Login no encontrado");
-    }
-
-    if (updateLoginDto.rol === TipoRolSistema.ADMINISTRADOR) {
+    if (maestraExistente) {
       throw new BadRequestException(
-        "No se puede asignar el rol ADMINISTRADOR desde este módulo",
+        `Ya existe una maestra asignada a la bodega ${nuevaBodega} y línea ${nuevaLinea}: ${
+          maestraExistente.empleado?.nombre ??
+          maestraExistente.empleado?.idempleado ??
+          "empleado sin nombre"
+        }`,
       );
     }
-
-    Object.assign(login, updateLoginDto);
-
-    const loginActualizado = await this.loginRepository.save(login);
-
-    return {
-      message: "Usuario actualizado correctamente",
-    };
   }
+
+  Object.assign(login, updateLoginDto);
+
+  await this.loginRepository.save(login);
+
+  return {
+    message: "Usuario actualizado correctamente",
+  };
+}
 
   remove(id: number) {
     return `This action removes a #${id} login`;

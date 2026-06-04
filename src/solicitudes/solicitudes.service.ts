@@ -3,7 +3,7 @@ import { CreateSolicitudeDto } from './dto/create-solicitude.dto';
 import { UpdateSolicitudeDto } from './dto/update-solicitude.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EstatusSolicitud, Solicitude } from './entities/solicitude.entity';
-import { Repository } from 'typeorm';
+import { Repository,Not } from 'typeorm';
 import { Vacacione } from '../vacaciones/entities/vacacione.entity';
 import { MailService } from '../mail/mail.service';
 import { Login, SubrolSistema, TipoRolSistema } from '../login/entities/login.entity';
@@ -197,12 +197,6 @@ return solicitudGuardada;
 
   await this.vacacionesrepository.save(empleado);
   await this.solicitudesRepository.save(solicitud);
-  console.log("Enviando correo a:", correoElectronico);
-  console.log("Solicitud aprobada en BD");
-console.log("Intentando enviar correo de APROBACIÓN");
-console.log("Correo destino:", correoElectronico);
-console.log("Empleado:", empleado.nombre);
-console.log("Fechas:", solicitud.fechainicio, solicitud.fechatermino);
 
   await this.mailService.enviarCorreoVacaciones({
     correoElectronico,
@@ -344,12 +338,6 @@ async rechazarSolicitud(id: number, motivorechazo: string,correoElectronico:stri
   solicitud.motivorechazo = motivorechazo;
 
   await this.solicitudesRepository.save(solicitud);
-
-  console.log("Solicitud rechazada en BD");
-console.log("Intentando enviar correo de RECHAZO");
-console.log("Correo destino:", correoElectronico);
-console.log("Empleado:", solicitud.empleado.nombre);
-console.log("Motivo:", motivorechazo.trim());
 
     await this.mailService.enviarCorreoVacaciones({
     correoElectronico,

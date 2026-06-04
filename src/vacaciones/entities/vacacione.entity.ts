@@ -78,8 +78,7 @@ export class Vacacione {
     type: "varchar",
     length: 100,
   })
-  puesto: string;
-
+  puesto: string
   @ApiProperty({
     example: "2021-04-28",
     description: "Fecha de ingreso del empleado",
