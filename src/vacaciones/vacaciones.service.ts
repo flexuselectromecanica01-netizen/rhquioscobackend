@@ -603,7 +603,7 @@ const calculo = this.calcularVacacionesPorFechaIngreso(
   semaforo: calculo.semaforo as any,
 });
 
-return await this.vacacionesRepository.save(vacaciones);
+    return await this.vacacionesRepository.save(vacaciones);
   }
 
   async remove(id: number) {

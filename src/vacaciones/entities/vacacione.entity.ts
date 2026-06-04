@@ -189,7 +189,8 @@ export class Vacacione {
   @Column({
     type: "enum",
     enum: TurnoEnum,
-    default:TurnoEnum.MATUTINO
+    default:TurnoEnum.MATUTINO,
+    nullable:true
   })
   turno:TurnoEnum
 
